@@ -276,6 +276,8 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
 .card .from { font-size: 13px; color: var(--muted); }
 @media (max-aspect-ratio: 9/10) {
   .sheet .r span:last-child::after { content: '•'; color: #E8B04A; }
+  .sheet .r { display: flex; justify-content: space-between; align-items: center; }
+  .sheet .r span:first-child { text-align: left; }
   .health b { font-size: 32px; }
   .sheet .eta { display: none; }
   .svcs { grid-template-columns: 1fr; }
@@ -457,8 +459,13 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
   const range = (sp, a, b) => clamp((sp - a) / (b - a));
 
   /* ================= assets ================= */
-  const SEQ = { a: 85, c: 39 };                       // a: drives in at night · c: drives out at sunrise
-  const FOCUS = { a: [.5, .6], c: [.5, .6], b1: [.52, .55], b2: [.52, .55], s1: [.5, .55], s2: [.5, .55] };
+  // phones get their own vertical clips (frames/m/…); the close-ups are cropped from the wide photos
+  const PHONE = innerWidth / innerHeight < .9;
+  const DIR = PHONE ? 'frames/m/' : 'frames/';
+  const SEQ = PHONE ? { a: 85, c: 39 } : { a: 85, c: 39 };   // a: drives in at night · c: drives out at sunrise
+  const FOCUS = PHONE
+    ? { a: [.5, .5], c: [.5, .5], b1: [.46, .55], b2: [.46, .55], s1: [.5, .6], s2: [.5, .6] }
+    : { a: [.5, .6], c: [.5, .6], b1: [.52, .55], b2: [.52, .55], s1: [.5, .55], s2: [.5, .55] };
   const frames = { a: [], c: [] };
   const stills = {};
   function still(k) {
@@ -470,7 +477,7 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
     for (let i = 0; i < SEQ[k]; i++) {
       const im = new Image(); im.decoding = 'async';
       im.onload = im.onerror = () => { dirty = true; if (--left === 0 && done) done(); };
-      im.src = `frames/${k}/${String(i + 1).padStart(3, '0')}.webp`;
+      im.src = `${DIR}${k}/${String(i + 1).padStart(3, '0')}.webp`;
       frames[k][i] = im;
     }
   }
@@ -593,7 +600,7 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
   function tick() { measure(); render(); overlays(); requestAnimationFrame(tick); }
   addEventListener('resize', size);
   size();
-  const first = new Image(); first.src = 'frames/a/001.webp';
+  const first = new Image(); first.src = `${DIR}a/001.webp`;
   first.onload = () => {
     frames.a[0] = first; $('loader').classList.add('gone'); dirty = true;
     loadSeq('a', () => { ['b1', 'b2', 's1', 's2'].forEach(still); loadSeq('c'); });
