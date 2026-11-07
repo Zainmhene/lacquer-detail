@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>HALO Motorworks</title>
-<meta name="description" content="Performance tuning studio. Exhaust, brakes, wheels and dyno-proven Stage tunes.">
+<meta name="description" content="Independent garage. Servicing, brakes, diagnostics and repairs with a fixed quote and same-day turnaround.">
 <meta name="theme-color" content="#07090B">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -60,7 +60,7 @@ a { color: inherit; text-decoration: none; }
 .pill svg { width: 16px; height: 16px; }
 
 /* ---------- story ---------- */
-#story { position: relative; height: 1100vh; }
+#story { position: relative; height: 950vh; }
 .stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
 #scene { position: absolute; inset: 0; width: 100%; height: 100%; display: block; background: #000; }
 .shade { position: absolute; inset: 0; pointer-events: none;
@@ -258,6 +258,29 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
   .stats { grid-template-columns: 1fr 1fr; }
 }
 @media (prefers-reduced-motion: reduce) { .chap, .dyno { transition: none; } }
+/* job card extras */
+.sheet h4 b { color: var(--accent); }
+.sheet .r span:last-child { color: #E8B04A; }
+.sheet .r.done span:last-child::before { content: '✓ '; }
+.health { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
+.health .top2 { display: flex; justify-content: space-between; align-items: baseline; }
+.health small { color: var(--muted); letter-spacing: .2em; font-size: 10px; }
+.health b { font-family: var(--head); font-style: italic; font-weight: 900; font-size: 44px; line-height: .9; transition: color .3s; }
+.health b i { font-size: 18px; color: var(--muted); font-style: normal; margin-left: 2px; }
+.health .meterbar { height: 5px; border-radius: 3px; background: rgba(238,242,245,.1); margin-top: 8px; overflow: hidden; }
+.health .meterbar i { display: block; height: 100%; width: 54%; border-radius: inherit; background: linear-gradient(90deg, #F05252, #E8B04A 50%, var(--accent)); transition: width .5s; }
+.health.full b { color: var(--accent); text-shadow: 0 0 18px rgba(34,211,238,.4); }
+.sheet .eta { display: flex; justify-content: space-between; color: var(--muted); margin-top: 8px; }
+.sheet .eta b { color: var(--ink); font-weight: 600; }
+.svcs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 40px; }
+.card .from { font-size: 13px; color: var(--muted); }
+@media (max-aspect-ratio: 9/10) {
+  .sheet .r span:last-child::after { content: '•'; color: #E8B04A; }
+  .health b { font-size: 32px; }
+  .sheet .eta { display: none; }
+  .svcs { grid-template-columns: 1fr; }
+}
+@media (min-aspect-ratio: 9/10) and (max-width: 1100px) { .svcs { grid-template-columns: 1fr 1fr; } }
 </style>
 </head>
 <body>
@@ -267,140 +290,138 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
     <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><circle cx="16" cy="16" r="12.5" stroke="currentColor" stroke-width="3"/><circle cx="16" cy="16" r="5" stroke="currentColor" stroke-width="2" opacity=".55"/></svg>
     <span><b>HALO</b><small>MOTORWORKS</small></span>
   </a>
-  <nav class="nav" aria-label="Main"><a href="#story">Builds</a><a href="#stages">Stages</a><a href="#stages">Dyno</a><a href="#contact">Contact</a></nav>
-  <button class="pill" data-build>Build your stage</button>
+  <nav class="nav" aria-label="Main"><a href="#services">Servicing</a><a href="#services">Repairs</a><a href="#services">Prices</a><a href="#contact">Contact</a></nav>
+  <button class="pill" data-book>Book a service</button>
 </header>
 
 <main>
-  <section id="story" aria-label="A stock GT-R becomes a Stage 2 build">
+  <section id="story" aria-label="A car is booked in, repaired, serviced and collected">
     <div class="stage">
       <canvas id="scene" aria-hidden="true"></canvas>
       <div class="shade"></div>
       <div class="loader" id="loader"><i></i></div>
 
       <div class="chap hero on" data-from="0" data-to=".05">
-        <p class="kick">HALO Motorworks · Performance studio</p>
-        <h1 class="big">Stock is the<em>starting line.</em></h1>
-        <p class="sub">Exhaust, brakes, wheels and tunes, all proven on our in-house dyno before you get the keys.</p>
+        <p class="kick">HALO Motorworks · Independent garage</p>
+        <h1 class="big">Bring it in.<em>Drive it home.</em></h1>
+        <p class="sub">Servicing, brakes, diagnostics and repairs on every make. A fixed quote before we pick up a spanner, and most jobs ready the same day.</p>
         <div class="ctas">
-          <button class="pill" data-build>Build your stage
+          <button class="pill" data-book>Book a service
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
-          <a class="pill ghost" href="#stages">See the stages</a>
+          <a class="pill ghost" href="#services">See prices</a>
         </div>
       </div>
-      <div class="chap" data-from=".2" data-to=".33">
-        <p class="kick">01 · Arrival</p>
-        <h2 class="big">Bone stock.<em>565 hp.</em></h2>
+      <div class="chap" data-from=".2" data-to=".36">
+        <p class="kick">01 · Booked in</p>
+        <h2 class="big">Checked in.<em>Checked over.</em></h2>
       </div>
-      <div class="chap" data-from=".39" data-to=".52">
-        <p class="kick">02 · Exhaust</p>
-        <h2 class="big">Full titanium.<em>Heat-blued.</em></h2>
+      <div class="chap" data-from=".42" data-to=".58">
+        <p class="kick">02 · Brakes</p>
+        <h2 class="big">Worn out.<em>Swapped out.</em></h2>
       </div>
-      <div class="chap" data-from=".57" data-to=".70">
-        <p class="kick">03 · Brakes &amp; wheels</p>
-        <h2 class="big">410 mm ceramics.<em>Forged 20s.</em></h2>
+      <div class="chap" data-from=".63" data-to=".79">
+        <p class="kick">03 · Full service</p>
+        <h2 class="big">Fresh oil.<em>Fresh everything.</em></h2>
       </div>
-      <div class="chap" data-from=".745" data-to=".86">
-        <p class="kick">04 · Tune</p>
-        <h2 class="big">Stage 2.<em id="hpBig">760 hp.</em></h2>
-      </div>
-      <div class="chap" data-from=".9" data-to="1.01">
-        <p class="kick">05 · Handover</p>
-        <h2 class="big">Built here.<em>Proven out there.</em></h2>
+      <div class="chap" data-from=".84" data-to="1.01">
+        <p class="kick">04 · Collection</p>
+        <h2 class="big">Ready by<em>morning.</em></h2>
         <div class="ctas">
-          <button class="pill" data-build>Build your stage
+          <button class="pill" data-book>Book a service
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
-          <a class="pill ghost" href="#stages">See the stages</a>
+          <a class="pill ghost" href="#services">See prices</a>
         </div>
       </div>
 
-      <aside class="sheet" id="sheet" aria-label="Build sheet">
-        <h4><span>BUILD SHEET</span><b>GT-R R35</b></h4>
-        <div class="r" id="rEx"><span>Exhaust</span><span>Stock</span></div>
-        <div class="r" id="rBr"><span>Brakes</span><span>Stock</span></div>
-        <div class="r" id="rWh"><span>Wheels</span><span>Stock</span></div>
-        <div class="r" id="rTu"><span>Tune</span><span>Stock</span></div>
-        <div class="pw" id="pw"><small>POWER</small><b><span id="hp">565</span><i>hp</i></b></div>
-        <div class="zero"><span>0–60 MPH</span><b id="zs">2.9 s</b></div>
-      </aside>
-
-      <aside class="dyno" id="dyno" aria-label="Dyno graph">
-        <div class="hd"><span>DYNO · WHEEL HP</span><b id="rpm">0 RPM</b></div>
-        <canvas id="graph"></canvas>
-        <div class="lg"><span>Stock</span><span>Stage 2</span></div>
+      <aside class="sheet" id="sheet" aria-label="Job card">
+        <h4><span>JOB CARD</span><b>#4127</b></h4>
+        <div class="r" id="rIn"><span>Inspection</span><span>Booked</span></div>
+        <div class="r" id="rBr"><span>Brakes</span><span>Worn</span></div>
+        <div class="r" id="rSv"><span>Service</span><span>Overdue</span></div>
+        <div class="r" id="rRt"><span>Road test</span><span>To do</span></div>
+        <div class="health" id="health">
+          <div class="top2"><small>CAR HEALTH</small><b><span id="hl">54</span><i>%</i></b></div>
+          <div class="meterbar"><i id="hbar"></i></div>
+        </div>
+        <div class="eta"><span>READY</span><b id="eta">Tomorrow 8:00</b></div>
       </aside>
 
       <div class="cue" id="cue">SCROLL</div>
-      <div class="prog" id="prog"><i><b></b></i><i><b></b></i><i><b></b></i><i><b></b></i><i><b></b></i></div>
+      <div class="prog" id="prog"><i><b></b></i><i><b></b></i><i><b></b></i><i><b></b></i></div>
     </div>
   </section>
 
-  <section class="sec" id="stages">
-    <h2>Pick your <em>stage.</em></h2>
-    <p class="lead">Every build is mapped live on our dyno and handed back with the printout. Fixed price, agreed before we start.</p>
-    <div class="stages">
+  <section class="sec" id="services">
+    <h2>Fixed prices. <em>No surprises.</em></h2>
+    <p class="lead">You get a written quote before any work starts. If we find something else, we call you first. Nothing extra goes on the bill without your OK.</p>
+    <div class="svcs">
       <article class="card">
-        <small>STAGE 1</small><h3>Wake it up</h3><p class="hp">+80 hp <span>· ECU only</span></p>
-        <ul><li>Custom ECU map</li><li>Dyno before &amp; after</li><li>Same-day turnaround</li></ul>
-        <div class="price"><b>$1,450</b><button class="pill ghost" data-build data-stage="1">Choose</button></div>
+        <small>INTERIM SERVICE</small><h3>Every 6 months</h3>
+        <ul><li>Oil &amp; oil filter</li><li>Fluids topped up</li><li>30-point check</li></ul>
+        <div class="price"><b>$149</b><button class="pill ghost" data-book data-svc="interim">Book</button></div>
       </article>
       <article class="card hot">
-        <small>STAGE 2 · MOST BOOKED</small><h3>The build</h3><p class="hp">+195 hp <span>· tune + hardware</span></p>
-        <ul><li>Downpipes &amp; intakes</li><li>Upgraded intercooler</li><li>Custom map on the dyno</li></ul>
-        <div class="price"><b>$4,900</b><button class="pill" data-build data-stage="2">Choose</button></div>
+        <small>FULL SERVICE · MOST BOOKED</small><h3>Every year</h3>
+        <ul><li>Oil, air &amp; cabin filters</li><li>Brakes &amp; tyres checked</li><li>60-point check + report</li></ul>
+        <div class="price"><b>$249</b><button class="pill" data-book data-svc="full">Book</button></div>
       </article>
       <article class="card">
-        <small>STAGE 3</small><h3>No limits</h3><p class="hp">+400 hp <span>· turbos &amp; fuel</span></p>
-        <ul><li>Upgraded turbos</li><li>Fuel system &amp; injectors</li><li>Built gearbox option</li></ul>
-        <div class="price"><b>$14,500</b><button class="pill ghost" data-build data-stage="3">Choose</button></div>
+        <small>BRAKES</small><h3>Pads &amp; discs</h3>
+        <ul><li>Per axle, parts included</li><li>Fluid checked</li><li>2-year parts warranty</li></ul>
+        <div class="price"><div><span class="from">from</span> <b>$189</b></div><button class="pill ghost" data-book data-add="brakes">Book</button></div>
+      </article>
+      <article class="card">
+        <small>DIAGNOSTICS</small><h3>Warning light?</h3>
+        <ul><li>Full computer scan</li><li>Plain-English report</li><li>Free if we do the repair</li></ul>
+        <div class="price"><b>$59</b><button class="pill ghost" data-book data-add="diag">Book</button></div>
       </article>
     </div>
     <div class="stats">
-      <div class="stat"><b>1,180</b><span>cars through the dyno</span></div>
-      <div class="stat"><b>4.9</b><span>average from 640 reviews</span></div>
-      <div class="stat"><b>2 yr</b><span>warranty on every tune</span></div>
-      <div class="stat"><b>48 h</b><span>typical Stage 2 turnaround</span></div>
+      <div class="stat"><b>4.9</b><span>from 1,240 reviews</span></div>
+      <div class="stat"><b>Same day</b><span>on most services</span></div>
+      <div class="stat"><b>12 mo</b><span>parts &amp; labour warranty</span></div>
+      <div class="stat"><b>Free</b><span>courtesy check with every job</span></div>
     </div>
   </section>
 
   <footer id="contact">
-    <span>HALO Motorworks · Unit 4, Ring Road Industrial Park · Mon–Sat 8:00–19:00</span>
+    <span>HALO Motorworks · Unit 4, Ring Road Industrial Park · Mon–Sat 8:00–18:00</span>
     <span>Demo website</span>
   </footer>
 </main>
 
-<!-- configurator -->
+<!-- booking -->
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="bkTitle" aria-hidden="true">
   <div class="dhead">
-    <div><small>HALO · BUILD &amp; BOOK</small><h2 id="bkTitle">Build your stage</h2></div>
+    <div><small>HALO · BOOKING</small><h2 id="bkTitle">Book a service</h2></div>
     <button class="x" id="closeBk" aria-label="Close">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
   </div>
   <div class="meter" id="meter">
-    <small>ESTIMATED POWER</small><span class="gain" id="gain">+0 hp</span>
-    <b><span id="estHp">565</span><i>hp</i></b><span></span>
-    <div class="bar"><i id="estBar" style="width:40%"></i></div>
+    <small>TIME IN THE WORKSHOP</small><span class="gain" id="ready">Ready same day</span>
+    <b><span id="hrs">2</span><i>hrs</i></b><span></span>
+    <div class="bar"><i id="estBar" style="width:25%"></i></div>
   </div>
 
   <div class="dbody" id="form">
     <div class="step">
       <span class="lbl">Your car</span>
       <div class="two">
-        <input class="field" id="car" value="Nissan GT-R R35" aria-label="Make and model" autocomplete="off">
-        <input class="field" id="base" value="565" inputmode="numeric" aria-label="Stock horsepower" autocomplete="off">
+        <input class="field" id="car" placeholder="Make & model" aria-label="Make and model" autocomplete="off">
+        <input class="field" id="reg" placeholder="Reg / plate" aria-label="Registration plate" autocomplete="off" style="text-transform:uppercase">
       </div>
     </div>
     <div class="step">
-      <span class="lbl">Stage</span>
-      <div class="opts" id="stageOpts"></div>
+      <span class="lbl">Service</span>
+      <div class="opts" id="svcOpts"></div>
     </div>
     <div class="step">
-      <span class="lbl">Hardware</span>
+      <span class="lbl">Add to the job</span>
       <div class="opts" id="addOpts"></div>
     </div>
     <div class="step">
-      <span class="lbl">Dyno day</span>
+      <span class="lbl">Drop-off</span>
       <div class="days" id="days"></div>
       <div class="times" id="times"></div>
     </div>
@@ -416,15 +437,15 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
 
   <div class="done" id="done" hidden>
     <div class="ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></div>
-    <h3>Build booked</h3>
+    <h3>You're booked in</h3>
     <p id="doneText"></p>
     <code id="ref"></code>
   </div>
 
   <div class="dfoot" id="foot">
-    <div class="sum"><span>Build total</span><b id="total">$0</b></div>
-    <button class="pill" id="submit">Book the dyno day</button>
-    <p class="fine">Deposit only on the day. Fixed price confirmed after inspection.</p>
+    <div class="sum"><span>Total</span><b id="total">$0</b></div>
+    <button class="pill" id="submit">Confirm booking</button>
+    <p class="fine">Pay when you collect. Fixed quote before any extra work.</p>
   </div>
 </aside>
 
@@ -436,9 +457,9 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
   const range = (sp, a, b) => clamp((sp - a) / (b - a));
 
   /* ================= assets ================= */
-  const SEQ = { a: 85, b: 61, c: 61 };                 // frames per clip
-  const FOCUS = { a: [.52, .6], e1: [.5, .62], e2: [.5, .62], w1: [.52, .55], w2: [.52, .55], b: [.4, .55], c: [.62, .55] };
-  const frames = { a: [], b: [], c: [] };
+  const SEQ = { a: 85, c: 39 };                       // a: drives in at night · c: drives out at sunrise
+  const FOCUS = { a: [.5, .6], c: [.5, .6], b1: [.52, .55], b2: [.52, .55], s1: [.5, .55], s2: [.5, .55] };
+  const frames = { a: [], c: [] };
   const stills = {};
   function still(k) {
     if (!stills[k]) { const im = new Image(); im.decoding = 'async'; im.src = `assets/${k}.jpg`; im.onload = () => (dirty = true); stills[k] = im; }
@@ -456,7 +477,7 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
   const ok = im => im && im.complete && im.naturalWidth > 0;
   function frameOf(k, u) {
     const arr = frames[k], n = arr.length; if (!n) return null;
-    let i = Math.round(clamp(u) * (n - 1));
+    const i = Math.round(clamp(u) * (n - 1));
     for (let d = 0; d < n; d++) {               // nearest loaded frame
       if (ok(arr[i - d])) return arr[i - d];
       if (ok(arr[i + d])) return arr[i + d];
@@ -465,31 +486,25 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
   }
 
   /* ================= timeline =================
-     0      hero (first frame of the drive-in)
-     .05    shutter up, car drives in      → clip a
-     .33    dip → exhaust, scan stock → titanium
-     .52    dip → front wheel, scan stock → forged + ceramics
-     .70    dip → dyno run                  → clip b  (+ live graph)
-     .865   dip → night street              → clip c                  */
-  const T = { a: [.05, .3], dip1: [.33, .37], scanE: [.42, .5], dip2: [.52, .56], scanW: [.6, .68], dip3: [.7, .74], b: [.745, .86], dip4: [.865, .895], c: [.9, .985] };
-  const CHAPTERS = [[0, .33], [.33, .52], [.52, .7], [.7, .865], [.865, 1]];
+     0     hero (first frame of the drive-in)
+     .05   shutter up, car drives in            → clip a
+     .36   dip → brakes, scan worn → new
+     .58   dip → engine bay, scan grimy → serviced
+     .79   dip → sunrise, car drives out          → clip c          */
+  const T = { a: [.05, .32], dip1: [.36, .4], scanB: [.45, .53], dip2: [.58, .62], scanS: [.66, .74], dip3: [.79, .83], c: [.86, .985] };
+  const CHAPTERS = [[0, .36], [.36, .58], [.58, .79], [.79, 1]];
 
   function pick(sp) {
-    // returns { base, next, scan, dip } ; base/next are {im, focus}
-    const S = (k) => ({ im: still(k), f: FOCUS[k] });
+    const S = k => ({ im: still(k), f: FOCUS[k] });
     const F = (k, u) => ({ im: frameOf(k, u), f: FOCUS[k] });
+    const dip = (a, b, r) => { const k = range(sp, ...r); return k < .5 ? { base: a, dip: k * 2 } : { base: b, dip: (1 - k) * 2 }; };
     if (sp < T.dip1[0]) return { base: F('a', range(sp, ...T.a)) };
-    if (sp < T.dip1[1]) { const k = range(sp, ...T.dip1); return k < .5 ? { base: F('a', 1), dip: k * 2 } : { base: S('e1'), dip: (1 - k) * 2 }; }
-    if (sp < T.dip2[0]) { const k = range(sp, ...T.scanE); return { base: S('e1'), next: S('e2'), scan: k, label: 'EXHAUST' }; }
-    if (sp < T.dip2[1]) { const k = range(sp, ...T.dip2); return k < .5 ? { base: S('e2'), dip: k * 2 } : { base: S('w1'), dip: (1 - k) * 2 }; }
-    if (sp < T.dip3[0]) { const k = range(sp, ...T.scanW); return { base: S('w1'), next: S('w2'), scan: k, label: 'BRAKES · WHEELS' }; }
-    const hasB = SEQ.b > 0, hasC = SEQ.c > 0;
-    const Bf = u => hasB ? F('b', u) : S('dyno');
-    const Cf = u => hasC ? F('c', u) : S('night');
-    if (sp < T.dip3[1]) { const k = range(sp, ...T.dip3); return k < .5 ? { base: S('w2'), dip: k * 2 } : { base: Bf(0), dip: (1 - k) * 2 }; }
-    if (sp < T.dip4[0]) return { base: Bf(range(sp, ...T.b)) };
-    if (sp < T.dip4[1]) { const k = range(sp, ...T.dip4); return k < .5 ? { base: Bf(1), dip: k * 2 } : { base: Cf(0), dip: (1 - k) * 2 }; }
-    return { base: Cf(range(sp, ...T.c) * .62) };     // stop while the car is still in sight
+    if (sp < T.dip1[1]) return dip(F('a', 1), S('b1'), T.dip1);
+    if (sp < T.dip2[0]) return { base: S('b1'), next: S('b2'), scan: range(sp, ...T.scanB), label: 'BRAKES' };
+    if (sp < T.dip2[1]) return dip(S('b2'), S('s1'), T.dip2);
+    if (sp < T.dip3[0]) return { base: S('s1'), next: S('s2'), scan: range(sp, ...T.scanS), label: 'SERVICE' };
+    if (sp < T.dip3[1]) return dip(S('s2'), F('c', 0), T.dip3);
+    return { base: F('c', range(sp, ...T.c)) };
   }
 
   /* ================= drawing ================= */
@@ -501,22 +516,22 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
     cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
     dirty = true;
   }
-  function cover(im, f) {                      // cover-fit, keeping the focus point in view
+  function cover(im, f) {
     const s = Math.max(W / im.naturalWidth, H / im.naturalHeight);
     const w = im.naturalWidth * s, h = im.naturalHeight * s;
     return [clamp(W / 2 - w * f[0], W - w, 0), clamp(H / 2 - h * f[1], H - h, 0), w, h];
   }
-  function draw(o, alpha = 1) {
+  function draw(o) {
     if (!o || !ok(o.im)) return false;
     const [x, y, w, h] = cover(o.im, o.f);
-    ctx.globalAlpha = alpha; ctx.drawImage(o.im, x, y, w, h); ctx.globalAlpha = 1;
+    ctx.drawImage(o.im, x, y, w, h);
     return true;
   }
   function render() {
-    const s = pick(sp);
     const key = sp.toFixed(4) + W + 'x' + H;
     if (!dirty && key === lastKey) return;
     lastKey = key; dirty = false;
+    const s = pick(sp);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
     if (!draw(s.base)) return;
@@ -525,18 +540,16 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
       if (k >= 1) draw(s.next);
       else {
         ctx.save(); ctx.beginPath(); ctx.rect(0, 0, x, H); ctx.clip(); draw(s.next); ctx.restore();
-        // the scan beam
         const g = ctx.createLinearGradient(x - 90, 0, x + 26, 0);
         g.addColorStop(0, 'rgba(34,211,238,0)'); g.addColorStop(.75, 'rgba(34,211,238,.16)'); g.addColorStop(.97, 'rgba(160,245,255,.9)'); g.addColorStop(1, 'rgba(34,211,238,0)');
         ctx.globalCompositeOperation = 'lighter';
         ctx.fillStyle = g; ctx.fillRect(x - 90, 0, 116, H);
         ctx.fillStyle = 'rgba(200,250,255,.95)'; ctx.fillRect(x - 1, 0, 2, H);
-        // fine scan lines just behind the beam
         ctx.fillStyle = 'rgba(34,211,238,.08)';
         for (let yy = 0; yy < H; yy += 4) ctx.fillRect(x - 60, yy, 60, 1);
         ctx.globalCompositeOperation = 'source-over';
         ctx.font = '600 10px "IBM Plex Mono", monospace'; ctx.fillStyle = 'rgba(160,245,255,.95)';
-        const label = `SCANNING · ${s.label} · ${Math.round(k * 100)}%`;
+        const label = `WORKING ON · ${s.label} · ${Math.round(k * 100)}%`;
         const tw = ctx.measureText(label).width;
         ctx.fillText(label, Math.min(x + 10, W - tw - 12), H * .3);
       }
@@ -544,60 +557,31 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
     if (s.dip) { ctx.fillStyle = `rgba(0,0,0,${clamp(s.dip) * .92})`; ctx.fillRect(0, 0, W, H); }
   }
 
-  /* ================= overlays ================= */
+  /* ================= job card ================= */
   const chaps = [...document.querySelectorAll('.chap')];
   const bars = [...document.querySelectorAll('#prog b')];
-  const hpEl = $('hp'), pwEl = $('pw'), sheet = $('sheet');
-  const rows = { rEx: ['Stock', 'Titanium'], rBr: ['Stock', '410 mm CCM'], rWh: ['Stock', 'Forged 20"'], rTu: ['Stock', 'Stage 2'] };
-  let lastDone = '';
+  const sheet = $('sheet');
+  const ROWS = { rIn: ['Booked', 'Done'], rBr: ['Worn', 'Replaced'], rSv: ['Overdue', 'Done'], rRt: ['To do', 'Passed'] };
+  let lastSig = '', lastHealth = -1;
   function overlays() {
     chaps.forEach(c => c.classList.toggle('on', sp >= +c.dataset.from && sp < +c.dataset.to));
     CHAPTERS.forEach(([a, b], i) => bars[i].style.transform = `scaleX(${range(sp, a, b)})`);
     $('cue').style.opacity = sp < .02 ? 1 : 0;
 
-    const exDone = sp > T.scanE[0] + (T.scanE[1] - T.scanE[0]) * .5;
-    const whDone = sp > T.scanW[0] + (T.scanW[1] - T.scanW[0]) * .5;
-    const dynoK = range(sp, T.b[0] + .01, T.b[1] - .015);
-    const tuDone = dynoK >= 1;
-    const done = [exDone, whDone, whDone, tuDone];
+    const half = r => sp > r[0] + (r[1] - r[0]) * .5;
+    const done = [sp > T.a[1], half(T.scanB), half(T.scanS), sp > T.c[0] + .04];
     const sig = done.join();
-    if (sig !== lastDone) {
-      ['rEx', 'rBr', 'rWh', 'rTu'].forEach((id, i) => { const r = $(id); r.classList.toggle('done', done[i]); r.lastElementChild.textContent = rows[id][done[i] ? 1 : 0]; });
-      if (lastDone) { sheet.classList.add('flash'); setTimeout(() => sheet.classList.remove('flash'), 600); }
-      lastDone = sig;
+    if (sig !== lastSig) {
+      Object.keys(ROWS).forEach((id, i) => { const r = $(id); r.classList.toggle('done', done[i]); r.lastElementChild.textContent = ROWS[id][done[i] ? 1 : 0]; });
+      $('eta').textContent = done[3] ? 'Collected ✓' : done[2] ? 'Today 17:30' : 'Tomorrow 8:00';
+      if (lastSig) { sheet.classList.add('flash'); setTimeout(() => sheet.classList.remove('flash'), 600); }
+      lastSig = sig;
     }
-    const hp = Math.round(565 + (exDone ? 25 : 0) + ease(dynoK) * 170);
-    hpEl.textContent = hp;
-    pwEl.classList.toggle('up', hp > 565);
-    $('zs').textContent = (tuDone ? 2.5 : 2.9) + ' s';
-
-    const dOn = sp > T.b[0] - .005 && sp < T.dip4[0] + .01;
-    $('dyno').classList.toggle('on', dOn);
-    if (dOn) graph(dynoK);
-  }
-
-  // dyno curve: stock vs stage 2
-  const gc = $('graph'), gx = gc.getContext('2d');
-  const curve = (r, peak) => peak * Math.min(1, Math.sin(Math.min(1, r / .78) * Math.PI / 2) ** 1.4) * (r > .86 ? 1 - (r - .86) * .9 : 1);
-  let lastG = -1;
-  function graph(k) {
-    const q = Math.round(k * 400); if (q === lastG) return; lastG = q;
-    const w = gc.clientWidth, h = gc.clientHeight, r = Math.min(devicePixelRatio || 1, 2);
-    if (gc.width !== Math.round(w * r)) { gc.width = Math.round(w * r); gc.height = Math.round(h * r); }
-    gx.setTransform(r, 0, 0, r, 0, 0); gx.clearRect(0, 0, w, h);
-    const pad = 4, X = t => pad + t * (w - pad * 2), Y = v => h - 8 - v / 800 * (h - 16);
-    gx.strokeStyle = 'rgba(238,242,245,.07)'; gx.lineWidth = 1;
-    for (let v = 200; v <= 800; v += 200) { gx.beginPath(); gx.moveTo(0, Y(v)); gx.lineTo(w, Y(v)); gx.stroke(); }
-    gx.setLineDash([4, 4]); gx.strokeStyle = '#5B6670'; gx.lineWidth = 1.5; gx.beginPath();
-    for (let t = 0; t <= 1.0001; t += .01) { const y = Y(curve(t, 565)); t ? gx.lineTo(X(t), y) : gx.moveTo(X(t), y); }
-    gx.stroke(); gx.setLineDash([]);
-    if (k > 0) {
-      gx.strokeStyle = '#22D3EE'; gx.lineWidth = 2.4; gx.shadowColor = 'rgba(34,211,238,.8)'; gx.shadowBlur = 8; gx.beginPath();
-      for (let t = 0; t <= k + 1e-6; t += .01) { const y = Y(curve(t, 760)); t ? gx.lineTo(X(t), y) : gx.moveTo(X(t), y); }
-      gx.stroke(); gx.shadowBlur = 0;
-      gx.fillStyle = '#A5F3FC'; gx.beginPath(); gx.arc(X(k), Y(curve(k, 760)), 3.5, 0, 7); gx.fill();
+    const h = 54 + (done[0] ? 4 : 0) + (done[1] ? 20 : 0) + (done[2] ? 18 : 0) + (done[3] ? 4 : 0);
+    if (h !== lastHealth) {
+      lastHealth = h; $('hl').textContent = h; $('hbar').style.width = h + '%';
+      $('health').classList.toggle('full', h >= 100);
     }
-    $('rpm').textContent = Math.round(1500 + k * 5600).toLocaleString('en') + ' RPM';
   }
 
   /* ================= loop ================= */
@@ -609,56 +593,53 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
   function tick() { measure(); render(); overlays(); requestAnimationFrame(tick); }
   addEventListener('resize', size);
   size();
-
-  // first frame first, then everything else
   const first = new Image(); first.src = 'frames/a/001.webp';
   first.onload = () => {
     frames.a[0] = first; $('loader').classList.add('gone'); dirty = true;
-    loadSeq('a', () => {
-      ['e1', 'e2', 'w1', 'w2', 'dyno', 'night'].forEach(still);
-      if (SEQ.b) loadSeq('b'); if (SEQ.c) loadSeq('c');
-    });
+    loadSeq('a', () => { ['b1', 'b2', 's1', 's2'].forEach(still); loadSeq('c'); });
   };
   requestAnimationFrame(tick);
 
-  /* ================= configurator ================= */
-  const STAGES = [
-    { id: 1, name: 'Stage 1', note: 'Custom ECU map, dyno before & after', hp: 80, price: 1450 },
-    { id: 2, name: 'Stage 2', note: 'Downpipes, intakes, intercooler, custom map', hp: 195, price: 4900 },
-    { id: 3, name: 'Stage 3', note: 'Upgraded turbos, fuel system, full map', hp: 400, price: 14500 },
+  /* ================= booking ================= */
+  const SERVICES = [
+    { id: 'none', name: 'No service', note: 'Just the extras below', price: 0, hrs: 0 },
+    { id: 'interim', name: 'Interim service', note: 'Oil & filter, fluids, 30-point check', price: 149, hrs: 1.5 },
+    { id: 'full', name: 'Full service', note: 'Oil, air & cabin filters, 60-point check', price: 249, hrs: 3 },
+    { id: 'major', name: 'Major service', note: 'Full service + spark plugs, brake fluid, coolant', price: 389, hrs: 4.5 },
   ];
   const ADDS = [
-    { id: 'ex', name: 'Titanium exhaust', note: 'Heat-blued, valved, −9 kg', hp: 25, price: 3200 },
-    { id: 'br', name: 'Carbon-ceramic brakes', note: '410 mm discs, 6-piston calipers', hp: 0, price: 8900 },
-    { id: 'wh', name: 'Forged wheels', note: '20" monoblock, −14 kg unsprung', hp: 0, price: 5400 },
+    { id: 'brakes', name: 'Brake pads & discs', note: 'Front axle, parts included', price: 189, hrs: 1.5 },
+    { id: 'diag', name: 'Diagnostic scan', note: 'Warning lights & fault codes', price: 59, hrs: .5 },
+    { id: 'mot', name: 'MOT / inspection', note: 'Pass or we tell you exactly why', price: 59, hrs: 1 },
+    { id: 'aircon', name: 'Air-con regas', note: 'Cold air again in 45 min', price: 69, hrs: .75 },
+    { id: 'collect', name: 'Collection & delivery', note: 'We pick it up and drop it back', price: 35, hrs: 0 },
   ];
-  const st = { stage: 2, adds: new Set(['ex']), day: 0, time: null };
+  const st = { svc: 'full', adds: new Set(), day: 0, time: null };
   const money = n => '$' + n.toLocaleString('en');
-  $('stageOpts').innerHTML = STAGES.map(s => `<label class="opt"><input type="radio" name="stage" value="${s.id}"${s.id === st.stage ? ' checked' : ''}><span class="box"></span>
-    <span><b>${s.name}</b><em>${s.note}</em></span><span class="pr">${money(s.price)}<small>+${s.hp} hp</small></span></label>`).join('');
-  $('addOpts').innerHTML = ADDS.map(a => `<label class="opt chk"><input type="checkbox" value="${a.id}"${st.adds.has(a.id) ? ' checked' : ''}><span class="box"></span>
-    <span><b>${a.name}</b><em>${a.note}</em></span><span class="pr">${money(a.price)}${a.hp ? `<small>+${a.hp} hp</small>` : ''}</span></label>`).join('');
-  $('stageOpts').addEventListener('change', e => { st.stage = +e.target.value; calc(); });
+  $('svcOpts').innerHTML = SERVICES.map(s => `<label class="opt"><input type="radio" name="svc" value="${s.id}"${s.id === st.svc ? ' checked' : ''}><span class="box"></span>
+    <span><b>${s.name}</b><em>${s.note}</em></span><span class="pr">${s.price ? money(s.price) : '—'}</span></label>`).join('');
+  $('addOpts').innerHTML = ADDS.map(a => `<label class="opt chk"><input type="checkbox" value="${a.id}"><span class="box"></span>
+    <span><b>${a.name}</b><em>${a.note}</em></span><span class="pr">${money(a.price)}</span></label>`).join('');
+  $('svcOpts').addEventListener('change', e => { st.svc = e.target.value; calc(); });
   $('addOpts').addEventListener('change', e => { e.target.checked ? st.adds.add(e.target.value) : st.adds.delete(e.target.value); calc(); });
-  $('base').addEventListener('input', calc);
   function calc() {
-    const base = Math.max(0, parseInt($('base').value, 10) || 0);
-    const s = STAGES.find(x => x.id === st.stage);
-    const gain = s.hp + ADDS.filter(a => st.adds.has(a.id)).reduce((t, a) => t + a.hp, 0);
-    const price = s.price + ADDS.filter(a => st.adds.has(a.id)).reduce((t, a) => t + a.price, 0);
-    $('estHp').textContent = base + gain; $('gain').textContent = `+${gain} hp`;
-    $('estBar').style.width = Math.min(100, (base + gain) / 1100 * 100) + '%';
+    const s = SERVICES.find(x => x.id === st.svc), extras = ADDS.filter(a => st.adds.has(a.id));
+    const price = s.price + extras.reduce((t, a) => t + a.price, 0);
+    const hrs = s.hrs + extras.reduce((t, a) => t + a.hrs, 0);
     $('total').textContent = money(price);
+    $('hrs').textContent = hrs % 1 ? hrs.toFixed(1) : hrs;
+    $('estBar').style.width = Math.min(100, hrs / 8 * 100) + '%';
+    $('ready').textContent = hrs === 0 ? 'Pick a service' : hrs <= 5 ? 'Ready same day' : 'Ready next morning';
   }
 
-  const TIMES = ['08:00', '09:30', '11:00', '13:00', '14:30', '16:00', '17:30', '18:30'];
+  const TIMES = ['08:00', '08:30', '09:00', '10:00', '11:30', '13:00', '14:00', '15:30'];
   const days = [];
-  for (let i = 1, d = new Date(); days.length < 6; i++) {          // dyno days start tomorrow, closed Sundays
+  for (let i = 1, d = new Date(); days.length < 6; i++) {          // from tomorrow, closed Sundays
     const x = new Date(d.getFullYear(), d.getMonth(), d.getDate() + i);
     if (x.getDay() !== 0) days.push(x);
   }
   $('days').innerHTML = days.map((d, i) => `<button type="button" class="day" aria-pressed="${i === 0}">
-    <small>${d.toLocaleDateString('en', { weekday: 'short' }).toUpperCase()}</small><b>${d.getDate()}</b></button>`).join('');
+    <small>${i === 0 ? 'TMRW' : d.toLocaleDateString('en', { weekday: 'short' }).toUpperCase()}</small><b>${d.getDate()}</b></button>`).join('');
   const taken = (day, i) => ((i * 5 + day * 3) % 4) === 1;           // demo: some slots already booked
   function times() {
     $('times').innerHTML = TIMES.map((t, i) => `<button type="button" class="chip" aria-pressed="${st.time === t}"${taken(st.day, i) ? ' disabled' : ''}>${t}</button>`).join('');
@@ -671,8 +652,9 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
   $('times').addEventListener('click', e => { const b = e.target.closest('.chip'); if (!b || b.disabled) return; st.time = b.textContent; times(); });
 
   const drawer = $('drawer'), scrim = $('scrim'); let lastFocus = null;
-  function open(stage) {
-    if (stage) { st.stage = +stage; document.querySelector(`#stageOpts input[value="${stage}"]`).checked = true; }
+  function open(svc, add) {
+    if (svc) { st.svc = svc; document.querySelector(`#svcOpts input[value="${svc}"]`).checked = true; }
+    if (add) { st.adds.add(add); document.querySelector(`#addOpts input[value="${add}"]`).checked = true; }
     calc(); times();
     $('form').hidden = false; $('foot').hidden = false; $('meter').hidden = false; $('done').hidden = true; $('err').hidden = true;
     lastFocus = document.activeElement;
@@ -683,18 +665,20 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
     drawer.classList.remove('on'); scrim.classList.remove('on'); drawer.setAttribute('aria-hidden', 'true'); document.body.classList.remove('locked');
     if (lastFocus) lastFocus.focus();
   }
-  document.querySelectorAll('[data-build]').forEach(b => b.addEventListener('click', () => open(b.dataset.stage)));
+  document.querySelectorAll('[data-book]').forEach(b => b.addEventListener('click', () => open(b.dataset.svc, b.dataset.add)));
   $('closeBk').addEventListener('click', close); scrim.addEventListener('click', close);
   addEventListener('keydown', e => { if (e.key === 'Escape' && drawer.classList.contains('on')) close(); });
   $('submit').addEventListener('click', () => {
     const miss = [];
     if (!$('car').value.trim()) miss.push('your car');
-    if (!st.time) miss.push('a dyno time');
+    if (st.svc === 'none' && !st.adds.size) miss.push('a service or repair');
+    if (!st.time) miss.push('a drop-off time');
     if (!$('name').value.trim()) miss.push('your name');
     if ($('phone').value.replace(/\D/g, '').length < 7) miss.push('a phone number');
     if (miss.length) { $('err').textContent = 'Almost there. Add ' + miss.join(', ').replace(/, ([^,]*)$/, ' and $1') + '.'; $('err').hidden = false; $('err').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); return; }
-    const d = days[st.day];
-    $('doneText').textContent = `${STAGES.find(x => x.id === st.stage).name} for your ${$('car').value.trim()}: about ${$('estHp').textContent} hp, ${$('total').textContent}. Drop it off ${d.toLocaleDateString('en', { weekday: 'long', day: 'numeric', month: 'short' })} at ${st.time}. We'll text ${$('name').value.trim().split(' ')[0]} to confirm.`;
+    const d = days[st.day], s = SERVICES.find(x => x.id === st.svc);
+    const what = [s.id !== 'none' ? s.name : null, ...ADDS.filter(a => st.adds.has(a.id) && a.id !== 'collect').map(a => a.name.toLowerCase())].filter(Boolean).join(', ');
+    $('doneText').textContent = `${what} for your ${$('car').value.trim()}. ${st.adds.has('collect') ? 'We\'ll collect it' : 'Drop it off'} ${d.toLocaleDateString('en', { weekday: 'long', day: 'numeric', month: 'short' })} at ${st.time}. Total ${$('total').textContent}. We'll text ${$('name').value.trim().split(' ')[0]} when it's ready.`;
     $('ref').textContent = 'HALO-' + Math.random().toString(36).slice(2, 7).toUpperCase();
     $('form').hidden = true; $('foot').hidden = true; $('meter').hidden = true; $('done').hidden = false;
   });
