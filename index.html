@@ -283,6 +283,12 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
   .svcs { grid-template-columns: 1fr; }
 }
 @media (min-aspect-ratio: 9/10) and (max-width: 1100px) { .svcs { grid-template-columns: 1fr 1fr; } }
+
+/* film grain + softer grade: takes the too-clean AI sheen off the footage */
+#scene { filter: saturate(.9) contrast(1.04) brightness(.98); }
+.grain { position: absolute; inset: -60%; z-index: 3; pointer-events: none; opacity: .11; mix-blend-mode: overlay; background-size: 220px; animation: grain .9s steps(6) infinite; }
+@keyframes grain { 0% { transform: translate(0, 0); } 17% { transform: translate(-4%, 3%); } 33% { transform: translate(3%, -5%); } 50% { transform: translate(-6%, -2%); } 67% { transform: translate(5%, 4%); } 83% { transform: translate(-2%, 6%); } 100% { transform: translate(0, 0); } }
+@media (prefers-reduced-motion: reduce) { .grain { animation: none; } }
 </style>
 </head>
 <body>
@@ -301,6 +307,7 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
     <div class="stage">
       <canvas id="scene" aria-hidden="true"></canvas>
       <div class="shade"></div>
+      <div class="grain" id="grain" aria-hidden="true"></div>
       <div class="loader" id="loader"><i></i></div>
 
       <div class="chap hero on" data-from="0" data-to=".05">
@@ -498,18 +505,25 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
      .36   dip → brakes, scan worn → new
      .58   dip → engine bay, scan grimy → serviced
      .79   dip → sunrise, car drives out          → clip c          */
-  const T = { a: [.05, .32], dip1: [.36, .4], scanB: [.45, .53], dip2: [.58, .62], scanS: [.66, .74], dip3: [.79, .83], c: [.86, .985] };
+  const T = { a: [.05, .32], push: [.33, .392], xf: [.392, .408], settleB: [.408, .45], scanB: [.45, .53], dip2: [.58, .62], settleS: [.62, .66], scanS: [.66, .74], dip3: [.79, .83], c: [.86, .985] };
+  // the camera moves in on the front wheel of the 4K garage shot, then hands over to the brake close-up
+  const MASTER = PHONE ? 'master_m' : 'master';
+  const WHEEL = PHONE ? [.4435, .618] : [.431, .647];
+  const ZMAX = PHONE ? 2.6 : 2.4;
   const CHAPTERS = [[0, .36], [.36, .58], [.58, .79], [.79, 1]];
 
   function pick(sp) {
     const S = k => ({ im: still(k), f: FOCUS[k] });
     const F = (k, u) => ({ im: frameOf(k, u), f: FOCUS[k] });
     const dip = (a, b, r) => { const k = range(sp, ...r); return k < .5 ? { base: a, dip: k * 2 } : { base: b, dip: (1 - k) * 2 }; };
-    if (sp < T.dip1[0]) return { base: F('a', range(sp, ...T.a)) };
-    if (sp < T.dip1[1]) return dip(F('a', 1), S('b1'), T.dip1);
-    if (sp < T.dip2[0]) return { base: S('b1'), next: S('b2'), scan: range(sp, ...T.scanB), label: 'BRAKES' };
-    if (sp < T.dip2[1]) return dip(S('b2'), S('s1'), T.dip2);
-    if (sp < T.dip3[0]) return { base: S('s1'), next: S('s2'), scan: range(sp, ...T.scanS), label: 'SERVICE' };
+    const Z = (o, z, p, t) => Object.assign(o, { z, p, t });
+    const M = k => Z({ im: still(MASTER), f: FOCUS.a }, 1 + (ZMAX - 1) * k, WHEEL, k);
+    if (sp < T.push[0]) return { base: F('a', range(sp, ...T.a)) };
+    if (sp < T.xf[0]) return { base: ok(still(MASTER)) ? M(ease(range(sp, ...T.push))) : F('a', 1) };
+    if (sp < T.xf[1]) { const k = range(sp, ...T.xf); return { base: M(1), over: Z(S('b1'), 1.12 - .04 * k), overA: ease(k) }; }
+    if (sp < T.dip2[0]) { const z = 1.08 - .08 * ease(range(sp, ...T.settleB)); return { base: Z(S('b1'), z), next: Z(S('b2'), z), scan: range(sp, ...T.scanB), label: 'BRAKES' }; }
+    if (sp < T.dip2[1]) return dip(S('b2'), Z(S('s1'), 1.18), T.dip2);
+    if (sp < T.dip3[0]) { const z = 1.18 - .18 * ease(range(sp, ...T.settleS)); return { base: Z(S('s1'), z), next: Z(S('s2'), z), scan: range(sp, ...T.scanS), label: 'SERVICE' }; }
     if (sp < T.dip3[1]) return dip(S('s2'), F('c', 0), T.dip3);
     return { base: F('c', range(sp, ...T.c)) };
   }
@@ -528,10 +542,19 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
     const w = im.naturalWidth * s, h = im.naturalHeight * s;
     return [clamp(W / 2 - w * f[0], W - w, 0), clamp(H / 2 - h * f[1], H - h, 0), w, h];
   }
-  function draw(o) {
+  function draw(o, alpha = 1) {
     if (!o || !ok(o.im)) return false;
-    const [x, y, w, h] = cover(o.im, o.f);
-    ctx.drawImage(o.im, x, y, w, h);
+    let [x, y, w, h] = cover(o.im, o.f);
+    if (o.z && o.z !== 1) {                     // camera move: zoom, pulling point p towards the centre by t
+      const p = o.p || [.5, .5], t = o.p ? o.t : 0;
+      const px = x + p[0] * w, py = y + p[1] * h;
+      const tx = px + (W / 2 - px) * t, ty = py + (H / 2 - py) * t;
+      const cx = o.p ? tx : W / 2, cy = o.p ? ty : H / 2;
+      const ux = o.p ? p[0] : (W / 2 - x) / w, uy = o.p ? p[1] : (H / 2 - y) / h;
+      w *= o.z; h *= o.z; x = cx - ux * w; y = cy - uy * h;
+      x = clamp(x, W - w, 0); y = clamp(y, H - h, 0);
+    }
+    ctx.globalAlpha = alpha; ctx.drawImage(o.im, x, y, w, h); ctx.globalAlpha = 1;
     return true;
   }
   function render() {
@@ -542,6 +565,7 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
     if (!draw(s.base)) return;
+    if (s.over && s.overA > 0) draw(s.over, s.overA);
     if (s.next && s.scan > 0) {
       const k = ease(s.scan), x = k * W;
       if (k >= 1) draw(s.next);
@@ -603,7 +627,7 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
   const first = new Image(); first.src = `${DIR}a/001.webp`;
   first.onload = () => {
     frames.a[0] = first; $('loader').classList.add('gone'); dirty = true;
-    loadSeq('a', () => { ['b1', 'b2', 's1', 's2'].forEach(still); loadSeq('c'); });
+    loadSeq('a', () => { [MASTER, 'b1', 'b2', 's1', 's2'].forEach(still); loadSeq('c'); });
   };
   requestAnimationFrame(tick);
 
@@ -689,6 +713,15 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
     $('ref').textContent = 'HALO-' + Math.random().toString(36).slice(2, 7).toUpperCase();
     $('form').hidden = true; $('foot').hidden = true; $('meter').hidden = true; $('done').hidden = false;
   });
+})();
+</script>
+<script>
+(() => {   // grain texture, made once
+  const c = document.createElement('canvas'); c.width = c.height = 220;
+  const g = c.getContext('2d'), d = g.createImageData(220, 220);
+  for (let i = 0; i < d.data.length; i += 4) { const v = 128 + (Math.random() - .5) * 255; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; }
+  g.putImageData(d, 0, 0);
+  const el = document.getElementById('grain'); if (el) el.style.backgroundImage = `url(${c.toDataURL()})`;
 })();
 </script>
 </body>
