@@ -265,6 +265,12 @@ textarea.field { resize: vertical; min-height: 80px; }
 @media (prefers-reduced-motion: reduce) {
   .hud .warn svg, .cue i { animation: none; }
 }
+
+/* film grain + softer grade: takes the too-clean AI sheen off the footage */
+#scene { filter: saturate(.9) contrast(1.04) brightness(.98); }
+.grain { position: absolute; inset: -60%; z-index: 3; pointer-events: none; opacity: .11; mix-blend-mode: overlay; background-size: 220px; animation: grain .9s steps(6) infinite; }
+@keyframes grain { 0% { transform: translate(0, 0); } 17% { transform: translate(-4%, 3%); } 33% { transform: translate(3%, -5%); } 50% { transform: translate(-6%, -2%); } 67% { transform: translate(5%, 4%); } 83% { transform: translate(-2%, 6%); } 100% { transform: translate(0, 0); } }
+@media (prefers-reduced-motion: reduce) { .grain { animation: none; } }
 </style>
 </head>
 <body>
@@ -286,6 +292,7 @@ textarea.field { resize: vertical; min-height: 80px; }
   <section id="story" aria-label="A broken-down car is brought in, diagnosed, repaired and collected">
     <div class="hero stage">
       <canvas id="scene" aria-hidden="true"></canvas>
+      <div class="grain" id="grain" aria-hidden="true"></div>
       <div class="loader" id="loader"><i></i></div>
 
       <div class="copy chap on" data-from="0" data-to=".12">
@@ -539,7 +546,8 @@ textarea.field { resize: vertical; min-height: 80px; }
   const SEQ = { b: 61, c: 38 };
   const FOCUS = PHONE
     ? { b: [.66, .55], c: [.78, .6], h1: [.5, .5], h2: [.5, .5], d1: [.5, .62], d2: [.5, .62] }
-    : { b: [.55, .55], c: [.6, .55], h1: [.5, .5], h2: [.5, .5], d1: [.5, .55], d2: [.5, .55] };
+    : { b: [.55, .55], c: [.6, .55], h1: [.5, .5], h2: [.5, .5], d1: [.5, .43], d2: [.5, .43] };
+  const ZOOM = PHONE ? {} : { d1: 1.38, d2: 1.38 };   // computer: tighter on the gauges
   const frames = { b: [], c: [] }, stills = {};
   const ok = im => im && im.complete && im.naturalWidth > 0;
   function still(k) {
@@ -567,10 +575,15 @@ textarea.field { resize: vertical; min-height: 80px; }
   }
   function draw(o) {
     if (!o || !ok(o.im)) return false;
-    const [x, y, w, h] = cover(o.im, o.f); ctx.drawImage(o.im, x, y, w, h); return true;
+    let [x, y, w, h] = cover(o.im, o.f);
+    if (o.z) {                                  // zoom in around the focus point
+      const px = x + o.f[0] * w, py = y + o.f[1] * h;
+      w *= o.z; h *= o.z; x = clamp(px - o.f[0] * w, W - w, 0); y = clamp(py - o.f[1] * h, H - h, 0);
+    }
+    ctx.drawImage(o.im, x, y, w, h); return true;
   }
   function pickInside(sp) {
-    const S = k => ({ im: still(k), f: FOCUS[k] }), F = (k, u) => ({ im: frameOf(k, u), f: FOCUS[k] });
+    const S = k => ({ im: still(k), f: FOCUS[k], z: ZOOM[k] }), F = (k, u) => ({ im: frameOf(k, u), f: FOCUS[k] });
     const dip = (a, b, r) => { const k = range(sp, ...r); return k < .5 ? { base: a, dip: k * 2 } : { base: b, dip: (1 - k) * 2 }; };
     if (sp < T.dip1[0]) return { base: F('b', range(sp, ...T.b)) };
     if (sp < T.dip1[1]) return dip(F('b', 1), S('h1'), T.dip1);
@@ -604,30 +617,79 @@ textarea.field { resize: vertical; min-height: 80px; }
     if (s.dip) { ctx.fillStyle = `rgba(0,0,0,${clamp(s.dip) * .92})`; ctx.fillRect(0, 0, W, H); }
   }
 
-  /* ---------- the roller shutter ---------- */
+  /* ---------- the roller shutter ----------
+     Painted once into an off-screen texture (galvanised slats, grime, rust runs, worn stencil),
+     then slid down over the scene. */
+  let tex = null, texKey = '';
+  function buildShutter() {
+    const key = W + 'x' + H + '@' + dpr; if (key === texKey) return; texKey = key;
+    tex = document.createElement('canvas'); tex.width = Math.round(W * dpr); tex.height = Math.round(H * dpr);
+    const g = tex.getContext('2d'); g.scale(dpr, dpr);
+    let seed = 7; const R = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    const slat = Math.max(18, H * .042);
+    for (let y = H - slat; y > -slat; y -= slat) {          // corrugated profile per slat
+      const v = 1 + (R() - .5) * .1, c = n => Math.round(n * v);
+      const lg = g.createLinearGradient(0, y, 0, y + slat);
+      lg.addColorStop(0, `rgb(${c(28)},${c(30)},${c(32)})`); lg.addColorStop(.08, `rgb(${c(96)},${c(100)},${c(104)})`);
+      lg.addColorStop(.3, `rgb(${c(74)},${c(78)},${c(82)})`); lg.addColorStop(.62, `rgb(${c(58)},${c(61)},${c(65)})`);
+      lg.addColorStop(.9, `rgb(${c(40)},${c(42)},${c(45)})`); lg.addColorStop(1, `rgb(${c(22)},${c(23)},${c(25)})`);
+      g.fillStyle = lg; g.fillRect(0, y, W, slat);
+    }
+    const n = document.createElement('canvas'); n.width = n.height = 160;  // fine metal noise
+    const ng = n.getContext('2d'), d = ng.createImageData(160, 160);
+    for (let i = 0; i < d.data.length; i += 4) { const q = 100 + R() * 110; d.data[i] = d.data[i + 1] = d.data[i + 2] = q; d.data[i + 3] = 255; }
+    ng.putImageData(d, 0, 0);
+    g.globalCompositeOperation = 'overlay'; g.globalAlpha = .22; g.fillStyle = g.createPattern(n, 'repeat'); g.fillRect(0, 0, W, H);
+    g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1;
+    for (let i = 0; i < W / 3; i++) {                        // rust and dirt runs
+      const x = R() * W, w = 1 + R() * (R() < .15 ? 14 : 4), fromTop = R() < .35;
+      const len = (fromTop ? .1 + R() * .35 : .15 + R() * .5) * H, y0 = fromTop ? 0 : H - len;
+      const rg = g.createLinearGradient(0, y0, 0, y0 + len), a = .05 + R() * .16;
+      const col = R() < .6 ? '96,58,28' : '20,18,16';
+      if (fromTop) { rg.addColorStop(0, `rgba(${col},${a})`); rg.addColorStop(1, `rgba(${col},0)`); }
+      else { rg.addColorStop(0, `rgba(${col},0)`); rg.addColorStop(1, `rgba(${col},${a * 1.4})`); }
+      g.fillStyle = rg; g.fillRect(x, y0, w, len);
+    }
+    const dirt = g.createLinearGradient(0, H * .78, 0, H);   // road dirt splashed up the bottom
+    dirt.addColorStop(0, 'rgba(40,32,24,0)'); dirt.addColorStop(1, 'rgba(40,32,24,.55)');
+    g.fillStyle = dirt; g.fillRect(0, H * .78, W, H * .22);
+    // worn spray-painted stencil
+    const p = document.createElement('canvas'); p.width = tex.width; p.height = tex.height;
+    const pg = p.getContext('2d'); pg.scale(dpr, dpr);
+    const fs = Math.min(W * (PHONE ? .3 : .2), H * .28);
+    pg.textAlign = 'center'; pg.textBaseline = 'middle';
+    pg.font = `900 ${fs}px "Big Shoulders Stencil Display", Impact, sans-serif`;
+    pg.fillStyle = '#E8601A'; pg.fillText('BAY 7', W / 2, H * .44);
+    pg.font = `700 ${fs * .16}px "Big Shoulders Stencil Display", Impact, sans-serif`;
+    pg.fillStyle = '#D9D4CC'; pg.fillText('MOTOR WORKS  ·  NO PARKING  ·  24/7 RECOVERY', W / 2, H * .44 + fs * .62);
+    pg.globalCompositeOperation = 'destination-out';
+    for (let i = 0; i < W * H / (PHONE ? 700 : 260); i++) { pg.globalAlpha = .25 + R() * .75; pg.fillRect(R() * W, R() * H, 1 + R() * 2.5, 1 + R() * 1.5); }
+    for (let i = 0; i < (PHONE ? 14 : 40); i++) { pg.globalAlpha = .5 + R() * .5; pg.fillRect(R() * W, 0, 1 + R() * 3, H); }  // scratches
+    g.globalAlpha = .82; g.drawImage(p, 0, 0, W, H); g.globalAlpha = 1;
+    const lamp = g.createRadialGradient(W / 2, -H * .15, 0, W / 2, -H * .15, H * 1.1);   // warm lamp above, dark edges
+    lamp.addColorStop(0, 'rgba(255,150,70,.22)'); lamp.addColorStop(.5, 'rgba(255,120,40,.05)'); lamp.addColorStop(1, 'rgba(0,0,0,.45)');
+    g.fillStyle = lamp; g.fillRect(0, 0, W, H);
+  }
+  if (document.fonts) document.fonts.ready.then(() => { texKey = ''; });   // repaint the stencil once the font is in
   function drawShutter(k) {           // k: 0 = fully up (hidden), 1 = fully down
     if (k <= 0) return;
-    const bottom = ease(k) * H, slat = Math.max(16, H * .045);
-    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, bottom); ctx.clip();
-    for (let y = bottom - slat; y > -slat; y -= slat) {
-      const g = ctx.createLinearGradient(0, y, 0, y + slat);
-      g.addColorStop(0, '#4A4E52'); g.addColorStop(.12, '#6B7075'); g.addColorStop(.5, '#3B3F43'); g.addColorStop(.92, '#2A2D30'); g.addColorStop(1, '#1C1E20');
-      ctx.fillStyle = g; ctx.fillRect(0, y, W, slat);
+    buildShutter();
+    const moving = k > 0 && k < 1;
+    const bottom = Math.min(H, ease(k) * H + (moving ? Math.sin(performance.now() / 38) * .8 : 0));
+    const sy = Math.max(0, H - bottom);
+    ctx.drawImage(tex, 0, sy * dpr, tex.width, bottom * dpr, 0, 0, W, bottom);
+    const sg = ctx.createLinearGradient(0, bottom, 0, bottom + 50);           // shadow cast below the edge
+    sg.addColorStop(0, 'rgba(0,0,0,.6)'); sg.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = sg; ctx.fillRect(0, bottom, W, 50);
+    const rail = Math.max(9, H * .016);                                      // steel bottom rail + rubber seal
+    const rg = ctx.createLinearGradient(0, bottom - rail, 0, bottom);
+    rg.addColorStop(0, '#6A6E72'); rg.addColorStop(.35, '#3A3D40'); rg.addColorStop(.8, '#1E2022'); rg.addColorStop(1, '#0B0C0D');
+    ctx.fillStyle = rg; ctx.fillRect(0, bottom - rail, W, rail);
+    ctx.fillStyle = '#0A0A0A'; ctx.fillRect(0, bottom - 2, W, 2);
+    for (const x of [W * .3, W * .7]) {                                     // lock handles
+      ctx.fillStyle = '#2A2C2E'; ctx.fillRect(x - 18, bottom - rail - 10, 36, rail + 6);
+      ctx.fillStyle = 'rgba(255,255,255,.12)'; ctx.fillRect(x - 18, bottom - rail - 10, 36, 1.5);
     }
-    // painted lettering on the slats, moves with the shutter
-    const fs = Math.min(W * .22, H * .3);
-    ctx.font = `900 ${fs}px "Big Shoulders Stencil Display", Impact, sans-serif`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillStyle = 'rgba(255,106,19,.78)'; ctx.fillText('BAY 7', W / 2, bottom - H * .5);
-    ctx.restore();
-    // bottom rail + handle + shadow on the scene below
-    const rail = Math.max(10, slat * .45);
-    const sg = ctx.createLinearGradient(0, bottom, 0, bottom + 40);
-    sg.addColorStop(0, 'rgba(0,0,0,.55)'); sg.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = sg; ctx.fillRect(0, bottom, W, 40);
-    ctx.fillStyle = '#16181A'; ctx.fillRect(0, bottom - rail, W, rail);
-    ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.fillRect(0, bottom - rail, W, 1.5);
-    ctx.fillStyle = '#FF6A13'; ctx.fillRect(W / 2 - 40, bottom - rail * .7, 80, rail * .4);
   }
 
   /* ---------- the readout ---------- */
@@ -793,6 +855,15 @@ textarea.field { resize: vertical; min-height: 80px; }
     $('ref').textContent = 'BAY7-' + Math.random().toString(36).slice(2, 7).toUpperCase();
     $('form').hidden = true; $('foot').hidden = true; $('done').hidden = false;
   });
+})();
+</script>
+<script>
+(() => {   // grain texture, made once
+  const c = document.createElement('canvas'); c.width = c.height = 220;
+  const g = c.getContext('2d'), d = g.createImageData(220, 220);
+  for (let i = 0; i < d.data.length; i += 4) { const v = 128 + (Math.random() - .5) * 255; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; }
+  g.putImageData(d, 0, 0);
+  const el = document.getElementById('grain'); if (el) el.style.backgroundImage = `url(${c.toDataURL()})`;
 })();
 </script>
 </body>
