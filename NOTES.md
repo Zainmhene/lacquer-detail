@@ -34,3 +34,8 @@ Next scenes from the script: drive into the bay → shutter down (code) → insi
 | Clip a: drives in, shutter down (4K) | d140be47… → 4d5d66af-b511-4b35-8a6b-988ad472ed48 | aedb38d2… → e9c675d3-0961-4df8-9fda-5884a797f5f9 |
 | Clip b: bonnet opens, camera in (4K) | 76483352… → bd89c427-f042-4177-ad5a-191375509443 | acc9ad7b… → e58cdb5a-6cb1-42a1-b637-66b7983ae6bd |
 | Clip c: drives off (4K) | e125d9e3… → 39b746e4-489d-4899-9244-10e37f0ccd7f | 6b32effb… → 9ae2974a-d792-43c0-b3e7-c737a84440e4 |
+
+## Phone entrance = computer entrance scene
+- Outpaint of 1f98004c to 9:16: 13466ad1-3b96-4b1b-8dcb-29beb8b4b7f7 (the second outpaint dd3c008f failed and wasn't used)
+- Uploaded start/end (closed-shutter shot composited in): 697cd543-0ff6-45b1-aedf-9bd8ce0178f1 / b3660aa6-9c1e-484f-a822-64e35798122d
+- Phone clip: cddf54dc-ea7e-4dbe-a18f-6e84ef0659a6 → 4K ffe478db-7b9e-4fb2-8813-663d9c98e22b; shown on phone at 1.4× zoom
