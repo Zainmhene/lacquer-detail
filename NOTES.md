@@ -62,3 +62,11 @@
 | Serviced engine | bd1e5213-9a79-4ebd-a670-c361b4b70a51 | e6e4d9e5-15a4-4cde-b258-d23c78964120 |
 | Clip w: rolls forward, camera to wheel (4K) | c7a3eee0 → 8d5c9590-b0e5-4ca0-94a9-ab41c82c01b4 | 11b44bce → cd8d2de7-e2e9-4293-b9aa-944e5d3ae590 |
 | Clip o: bonnet opens (4K) | a496abc0 → 7b72c143-c3ce-45b1-9864-948b68cc399a | cae807e9 → f7fa6c93-ed03-4b29-be58-0023d49b4e75 |
+
+## V4: fixed environment drift (car rolls forward with a locked camera, then a code push-in on the wheel)
+| What | Computer | Phone |
+|---|---|---|
+| Car rolled forward + turned (same garage) | b1e25197-d7d5-40a4-9419-3fc8f90baf69 | dafa836b-e47a-41c9-8d50-b550b682f68d |
+| Same, wheel off / worn brakes | 3dab0f59-e54d-4fab-9576-6b20bad35501 | 4db94a14-29dc-4141-9eae-c40ae8785e4e |
+| Same, new brakes | 30315502-5c14-4ab5-9288-ab28752bf053 | 8002cdbb-8c65-4912-8b8d-3213eeb615b0 |
+| Clip w (locked camera, 4K) | ff983a4f → 91429f14-edbd-4e70-af2d-4ef0b2c3a5d4 | 0309d428 → 2d5b9cdb-d762-4d0a-a404-20db262fc872 |
