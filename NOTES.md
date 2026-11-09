@@ -19,3 +19,18 @@ Next scenes from the script: drive into the bay → shutter down (code) → insi
 **To do when credits are topped up:**
 - 4K upscale of clips b and c (~4.5 credits each), then re-export frames/b and frames/c
 - Phone: vertical versions of the inside shots (they're cropped from 16:9 for now)
+
+## V2 story (rear drive-in, real shutter, BMW M wheel), Higgsfield job IDs
+| What | Computer (16:9) | Phone (9:16) |
+|---|---|---|
+| From behind, hazards, light smoke | 1f98004c-383d-4450-8ca7-19302f6db96a | ca0bedd0-ed7c-476c-a3db-36a09daeadb5 |
+| Shutter closed, BAY 7 sign | 6ab89116-842b-4cb5-bc54-be1513a91609 | fb124bd8-6949-48b9-819e-0ad114685954 |
+| Inside, light smoke | 491ff277-9c01-4282-b065-6e451cf76b9a | 7e4961b5-7245-4ab6-8b22-1b2a2bb2173f |
+| Engine bay, bad | dd1eed07-e32d-440c-bca4-dc4e95c26d13 | a24d9447-6d92-4704-8114-776b5b6a557b |
+| Engine bay, fixed | 6792578c-bbcc-4142-8f88-effa122b3400 | 620e252e-7b78-4c6c-b25a-ab6c61208b53 |
+| BMW M wheel, warnings | 93a594c0-2cac-4bc7-847e-ef2ea84ea38d | dc1dd397-6eb1-4c9e-9a7c-0924f2229b7f |
+| BMW M wheel, clear | 251d9163-db4b-47f2-a780-4f13a269275e | 9982109a-6f14-4c6c-94f5-a0996e1063f8 |
+| Sunrise facing out | e2879773-5d7e-4216-9541-de7718dfc8c5 | 32583719-7b70-4a7f-8477-43d5b1d4e34c |
+| Clip a: drives in, shutter down (4K) | d140be47… → 4d5d66af-b511-4b35-8a6b-988ad472ed48 | aedb38d2… → e9c675d3-0961-4df8-9fda-5884a797f5f9 |
+| Clip b: bonnet opens, camera in (4K) | 76483352… → bd89c427-f042-4177-ad5a-191375509443 | acc9ad7b… → e58cdb5a-6cb1-42a1-b637-66b7983ae6bd |
+| Clip c: drives off (4K) | e125d9e3… → 39b746e4-489d-4899-9244-10e37f0ccd7f | 6b32effb… → 9ae2974a-d792-43c0-b3e7-c737a84440e4 |

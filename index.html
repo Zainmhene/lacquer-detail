@@ -500,12 +500,12 @@ body.locked .sticky-cta { transform: translate(-50%, 160%); opacity: 0; }
 <main>
   <section id="story" aria-label="A broken-down car is brought in, diagnosed, repaired and collected">
     <div class="hero stage">
-      <div class="heroimg"><picture><source media="(max-aspect-ratio: 9/10)" srcset="assets/hero_m.jpg"><img src="assets/hero.jpg" width="2560" height="1440" decoding="async" fetchpriority="high" alt="Green BMW M4 broken down outside Bay 7 at night, steam pouring from under the bonnet"></picture></div>
+      <div class="heroimg"><picture><source media="(max-aspect-ratio: 9/10)" srcset="assets/hero_m.jpg"><img src="assets/hero.jpg" width="2560" height="1440" decoding="async" fetchpriority="high" alt="Green BMW M4 with hazards on and smoke rising, about to drive into Bay 7 at night"></picture></div>
       <canvas id="scene" aria-hidden="true"></canvas>
       <div class="grain" id="grain" aria-hidden="true"></div>
       <div class="loader" id="loader"><i></i></div>
 
-      <div class="copy chap on" data-from="0" data-to=".12">
+      <div class="copy chap on" data-from="0" data-to=".08">
         <p class="tag"><i></i>Open now · till 10pm</p>
         <h1>Sounds<span class="hot">expensive?</span></h1>
         <p class="lede">It probably isn't. Free diagnostic, a fixed quote before we touch a bolt, and most repairs done the same day.</p>
@@ -522,25 +522,25 @@ body.locked .sticky-cta { transform: translate(-50%, 160%); opacity: 0; }
         </div>
       </div>
 
-      <div class="copy chap" data-from=".16" data-to=".3">
-        <p class="tag kick">01 · Shutter down</p>
+      <div class="copy chap" data-from=".12" data-to=".31">
+        <p class="tag kick">01 · Booked in</p>
         <h2 class="big">Bring it<span class="hot">in.</span></h2>
       </div>
-      <div class="copy chap" data-from=".33" data-to=".49">
+      <div class="copy chap" data-from=".38" data-to=".53">
         <p class="tag kick">02 · Diagnosis</p>
         <h2 class="big">We find<span class="hot">it.</span></h2>
         <p class="lede">Split coolant hose and a stuck thermostat. Found in 20 minutes, quoted before we start.</p>
       </div>
-      <div class="copy chap" data-from=".53" data-to=".67">
+      <div class="copy chap" data-from=".53" data-to=".65">
         <p class="tag kick">03 · Repair</p>
         <h2 class="big">We fix<span class="hot">it.</span></h2>
         <p class="lede">New hose, new clamps, new thermostat. Fresh coolant, bled and pressure-tested.</p>
       </div>
-      <div class="copy chap" data-from=".71" data-to=".85">
+      <div class="copy chap" data-from=".69" data-to=".83">
         <p class="tag kick">04 · Proof</p>
         <h2 class="big">No warning lights.<span class="hot">No guesswork.</span></h2>
       </div>
-      <div class="copy chap" data-from=".88" data-to="1.01">
+      <div class="copy chap" data-from=".86" data-to="1.01">
         <p class="tag kick">05 · Collection</p>
         <h2 class="big">Back on the road.<span class="hot">Same day.</span></h2>
         <div class="ctas">
@@ -784,8 +784,11 @@ body.locked .sticky-cta { transform: translate(-50%, 160%); opacity: 0; }
   const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
   const ease = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
   const range = (v, a, b) => clamp((v - a) / (b - a));
-  const T = { down: [.12, .2], up: [.24, .3], b: [.3, .47], dip1: [.49, .53], scanH: [.56, .64], dip2: [.68, .72], scanD: [.75, .83], dip3: [.86, .89], c: [.9, .985] };
-  const CHAPTERS = [[0, .2], [.2, .49], [.49, .68], [.68, .86], [.86, 1]];
+  /* 0 hero (from behind, hazards, smoke) · .08 drives in, real shutter comes down (clip a)
+     .31 dip → inside: bonnet opens, camera moves in (clip b) · .53 scan: hose fixed
+     .64 dip → BMW M wheel, warnings on · .71 scan: cleared · .82 dip → drives off at sunrise (clip c) */
+  const T = { a: [.08, .3], dip1: [.31, .34], b: [.34, .5], scanE: [.53, .61], dip2: [.64, .68], scanD: [.71, .79], dip3: [.82, .85], c: [.86, .985] };
+  const CHAPTERS = [[0, .31], [.31, .53], [.53, .66], [.66, .84], [.84, 1]];
 
   const cv = $('scene');
   const ctx = cv.getContext('2d');
@@ -794,12 +797,12 @@ body.locked .sticky-cta { transform: translate(-50%, 160%); opacity: 0; }
 
   /* ---------- hero photo with smoke, rain and hazards ---------- */
   const SHOTS = {
-    d: { src: 'assets/hero.jpg', focus: [.62, .55], car: .48,
-         smoke: { x: [.53, .64], y: [.505, .54], drift: -1 },
-         lamps: [[.44, .606, 1], [.703, .602, 1], [.8125, .509, .55]] },
-    m: { src: 'assets/hero_m.jpg', focus: [.5, .55], car: .64,
-         smoke: { x: [.33, .5], y: [.56, .58], drift: -1 },
-         lamps: [[.245, .599, 1], [.574, .596, 1], [.722, .553, .55]] },
+    d: { src: 'assets/hero.jpg', focus: [.6, .55], car: .34,
+         smoke: { x: [.68, .78], y: [.42, .46], drift: -.4 },
+         lamps: [[.536, .574, 1], [.682, .574, 1], [.818, .523, .5]] },
+    m: { src: 'assets/hero_m.jpg', focus: [.5, .6], car: .37,
+         smoke: { x: [.42, .55], y: [.585, .6], drift: -.4 },
+         lamps: [[.398, .647, 1], [.606, .647, 1], [.346, .613, .5], [.648, .613, .5]] },
   };
   const shot = SHOTS[PHONE ? 'm' : 'd'];
   const heroImg = new Image(); heroImg.decoding = 'async'; heroImg.src = shot.src;
@@ -835,7 +838,7 @@ body.locked .sticky-cta { transform: translate(-50%, 160%); opacity: 0; }
 
   function drawHero(dt, now, sp) {
     if (!place) return false;
-    const level = Math.min(1, .55 + heat * .3 + range(sp, 0, .12) * .5);
+    const level = Math.min(1, .55 + heat * .3 + range(sp, 0, .08) * .5);
     ctx.drawImage(heroImg, place.x, place.y, place.w, place.h);
     const t = now / 1000, ph = (t * 1.4) % 1, on = ph < .5 ? Math.sin(Math.min(1, ph / .08) * Math.PI / 2) : Math.max(0, 1 - (ph - .5) / .12);
     if (on > 0) {
@@ -876,15 +879,17 @@ body.locked .sticky-cta { transform: translate(-50%, 160%); opacity: 0; }
   }
 
   /* ---------- inside: clip frames and photos ---------- */
-  const SEQ = { b: 61, c: 38 };
+  // phones get their own vertical clips and photos (frames/m/…, assets/*_m.jpg)
+  const SEQ = PHONE ? { a: 121, b: 85, c: 41 } : { a: 121, b: 85, c: 38 };
+  const DIR = PHONE ? 'frames/m/' : 'frames/', SUF = PHONE ? '_m' : '';
   const FOCUS = PHONE
-    ? { b: [.66, .55], c: [.78, .6], h1: [.5, .5], h2: [.5, .5], d1: [.5, .62], d2: [.5, .62] }
-    : { b: [.55, .55], c: [.6, .55], h1: [.5, .5], h2: [.5, .5], d1: [.5, .43], d2: [.5, .43] };
-  const ZOOM = PHONE ? {} : { d1: 1.38, d2: 1.38 };   // computer: tighter on the gauges
-  const frames = { b: [], c: [] }, stills = {};
+    ? { a: [.5, .55], b: [.5, .55], c: [.5, .6], e1: [.5, .5], e2: [.5, .5], d1: [.5, .5], d2: [.5, .5] }
+    : { a: [.55, .55], b: [.5, .5], c: [.6, .55], e1: [.5, .5], e2: [.5, .5], d1: [.5, .5], d2: [.5, .5] };
+  const ZOOM = {};
+  const frames = { a: [], b: [], c: [] }, stills = {};
   const ok = im => im && im.complete && im.naturalWidth > 0;
   function still(k) {
-    if (!stills[k]) { const im = new Image(); im.decoding = 'async'; im.src = `assets/${k}.jpg`; stills[k] = im; }
+    if (!stills[k]) { const im = new Image(); im.decoding = 'async'; im.src = `assets/${k}${SUF}.jpg`; stills[k] = im; }
     return stills[k];
   }
   function loadSeq(k, done) {
@@ -892,7 +897,7 @@ body.locked .sticky-cta { transform: translate(-50%, 160%); opacity: 0; }
     for (let i = 0; i < SEQ[k]; i++) {
       const im = new Image(); im.decoding = 'async';
       im.onload = im.onerror = () => { if (--left === 0 && done) done(); };
-      im.src = `frames/${k}/${String(i + 1).padStart(3, '0')}.webp`;
+      im.src = `${DIR}${k}/${String(i + 1).padStart(3, '0')}.webp`;
       frames[k][i] = im;
     }
   }
@@ -918,10 +923,11 @@ body.locked .sticky-cta { transform: translate(-50%, 160%); opacity: 0; }
   function pickInside(sp) {
     const S = k => ({ im: still(k), f: FOCUS[k], z: ZOOM[k] }), F = (k, u) => ({ im: frameOf(k, u), f: FOCUS[k] });
     const dip = (a, b, r) => { const k = range(sp, ...r); return k < .5 ? { base: a, dip: k * 2 } : { base: b, dip: (1 - k) * 2 }; };
-    if (sp < T.dip1[0]) return { base: F('b', range(sp, ...T.b)) };
-    if (sp < T.dip1[1]) return dip(F('b', 1), S('h1'), T.dip1);
-    if (sp < T.dip2[0]) return { base: S('h1'), next: S('h2'), scan: range(sp, ...T.scanH), label: 'COOLING SYSTEM' };
-    if (sp < T.dip2[1]) return dip(S('h2'), S('d1'), T.dip2);
+    if (sp < T.dip1[0]) return { base: F('a', range(sp, ...T.a)) };
+    if (sp < T.dip1[1]) return dip(F('a', 1), F('b', 0), T.dip1);
+    if (sp < T.scanE[0]) return { base: F('b', range(sp, ...T.b)) };
+    if (sp < T.dip2[0]) return { base: S('e1'), next: S('e2'), scan: range(sp, ...T.scanE), label: 'COOLING SYSTEM' };
+    if (sp < T.dip2[1]) return dip(S('e2'), S('d1'), T.dip2);
     if (sp < T.dip3[0]) return { base: S('d1'), next: S('d2'), scan: range(sp, ...T.scanD), label: 'FAULT CODES' };
     if (sp < T.dip3[1]) return dip(S('d2'), F('c', 0), T.dip3);
     return { base: F('c', range(sp, ...T.c)) };
@@ -950,99 +956,24 @@ body.locked .sticky-cta { transform: translate(-50%, 160%); opacity: 0; }
     if (s.dip) { ctx.fillStyle = `rgba(0,0,0,${clamp(s.dip) * .92})`; ctx.fillRect(0, 0, W, H); }
   }
 
-  /* ---------- the roller shutter ----------
-     Painted once into an off-screen texture (galvanised slats, grime, rust runs, worn stencil),
-     then slid down over the scene. */
-  let tex = null, texKey = '';
-  function buildShutter() {
-    const key = W + 'x' + H + '@' + dpr; if (key === texKey) return; texKey = key;
-    tex = document.createElement('canvas'); tex.width = Math.round(W * dpr); tex.height = Math.round(H * dpr);
-    const g = tex.getContext('2d'); g.scale(dpr, dpr);
-    let seed = 7; const R = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-    const slat = Math.max(18, H * .042);
-    for (let y = H - slat; y > -slat; y -= slat) {          // corrugated profile per slat
-      const v = 1 + (R() - .5) * .1, c = n => Math.round(n * v);
-      const lg = g.createLinearGradient(0, y, 0, y + slat);
-      lg.addColorStop(0, `rgb(${c(28)},${c(30)},${c(32)})`); lg.addColorStop(.08, `rgb(${c(96)},${c(100)},${c(104)})`);
-      lg.addColorStop(.3, `rgb(${c(74)},${c(78)},${c(82)})`); lg.addColorStop(.62, `rgb(${c(58)},${c(61)},${c(65)})`);
-      lg.addColorStop(.9, `rgb(${c(40)},${c(42)},${c(45)})`); lg.addColorStop(1, `rgb(${c(22)},${c(23)},${c(25)})`);
-      g.fillStyle = lg; g.fillRect(0, y, W, slat);
-    }
-    const n = document.createElement('canvas'); n.width = n.height = 160;  // fine metal noise
-    const ng = n.getContext('2d'), d = ng.createImageData(160, 160);
-    for (let i = 0; i < d.data.length; i += 4) { const q = 100 + R() * 110; d.data[i] = d.data[i + 1] = d.data[i + 2] = q; d.data[i + 3] = 255; }
-    ng.putImageData(d, 0, 0);
-    g.globalCompositeOperation = 'overlay'; g.globalAlpha = .22; g.fillStyle = g.createPattern(n, 'repeat'); g.fillRect(0, 0, W, H);
-    g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1;
-    for (let i = 0; i < W / 3; i++) {                        // rust and dirt runs
-      const x = R() * W, w = 1 + R() * (R() < .15 ? 14 : 4), fromTop = R() < .35;
-      const len = (fromTop ? .1 + R() * .35 : .15 + R() * .5) * H, y0 = fromTop ? 0 : H - len;
-      const rg = g.createLinearGradient(0, y0, 0, y0 + len), a = .05 + R() * .16;
-      const col = R() < .6 ? '96,58,28' : '20,18,16';
-      if (fromTop) { rg.addColorStop(0, `rgba(${col},${a})`); rg.addColorStop(1, `rgba(${col},0)`); }
-      else { rg.addColorStop(0, `rgba(${col},0)`); rg.addColorStop(1, `rgba(${col},${a * 1.4})`); }
-      g.fillStyle = rg; g.fillRect(x, y0, w, len);
-    }
-    const dirt = g.createLinearGradient(0, H * .78, 0, H);   // road dirt splashed up the bottom
-    dirt.addColorStop(0, 'rgba(40,32,24,0)'); dirt.addColorStop(1, 'rgba(40,32,24,.55)');
-    g.fillStyle = dirt; g.fillRect(0, H * .78, W, H * .22);
-    // worn spray-painted stencil
-    const p = document.createElement('canvas'); p.width = tex.width; p.height = tex.height;
-    const pg = p.getContext('2d'); pg.scale(dpr, dpr);
-    const fs = Math.min(W * (PHONE ? .3 : .2), H * .28);
-    pg.textAlign = 'center'; pg.textBaseline = 'middle';
-    pg.font = `900 ${fs}px "Big Shoulders Stencil Display", Impact, sans-serif`;
-    pg.fillStyle = '#E8601A'; pg.fillText('BAY 7', W / 2, H * .44);
-    pg.font = `700 ${fs * .16}px "Big Shoulders Stencil Display", Impact, sans-serif`;
-    pg.fillStyle = '#D9D4CC'; pg.fillText('MOTOR WORKS  ·  NO PARKING  ·  24/7 RECOVERY', W / 2, H * .44 + fs * .62);
-    pg.globalCompositeOperation = 'destination-out';
-    for (let i = 0; i < W * H / (PHONE ? 700 : 260); i++) { pg.globalAlpha = .25 + R() * .75; pg.fillRect(R() * W, R() * H, 1 + R() * 2.5, 1 + R() * 1.5); }
-    for (let i = 0; i < (PHONE ? 14 : 40); i++) { pg.globalAlpha = .5 + R() * .5; pg.fillRect(R() * W, 0, 1 + R() * 3, H); }  // scratches
-    g.globalAlpha = .82; g.drawImage(p, 0, 0, W, H); g.globalAlpha = 1;
-    const lamp = g.createRadialGradient(W / 2, -H * .15, 0, W / 2, -H * .15, H * 1.1);   // warm lamp above, dark edges
-    lamp.addColorStop(0, 'rgba(255,150,70,.22)'); lamp.addColorStop(.5, 'rgba(255,120,40,.05)'); lamp.addColorStop(1, 'rgba(0,0,0,.45)');
-    g.fillStyle = lamp; g.fillRect(0, 0, W, H);
-  }
-  if (document.fonts) document.fonts.ready.then(() => { texKey = ''; });   // repaint the stencil once the font is in
-  function drawShutter(k) {           // k: 0 = fully up (hidden), 1 = fully down
-    if (k <= 0) return;
-    buildShutter();
-    const moving = k > 0 && k < 1;
-    const bottom = Math.min(H, ease(k) * H + (moving ? Math.sin(performance.now() / 38) * .8 : 0));
-    const sy = Math.max(0, H - bottom);
-    ctx.drawImage(tex, 0, sy * dpr, tex.width, bottom * dpr, 0, 0, W, bottom);
-    const sg = ctx.createLinearGradient(0, bottom, 0, bottom + 50);           // shadow cast below the edge
-    sg.addColorStop(0, 'rgba(0,0,0,.6)'); sg.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = sg; ctx.fillRect(0, bottom, W, 50);
-    const rail = Math.max(9, H * .016);                                      // steel bottom rail + rubber seal
-    const rg = ctx.createLinearGradient(0, bottom - rail, 0, bottom);
-    rg.addColorStop(0, '#6A6E72'); rg.addColorStop(.35, '#3A3D40'); rg.addColorStop(.8, '#1E2022'); rg.addColorStop(1, '#0B0C0D');
-    ctx.fillStyle = rg; ctx.fillRect(0, bottom - rail, W, rail);
-    ctx.fillStyle = '#0A0A0A'; ctx.fillRect(0, bottom - 2, W, 2);
-    for (const x of [W * .3, W * .7]) {                                     // lock handles
-      ctx.fillStyle = '#2A2C2E'; ctx.fillRect(x - 18, bottom - rail - 10, 36, rail + 6);
-      ctx.fillStyle = 'rgba(255,255,255,.12)'; ctx.fillRect(x - 18, bottom - rail - 10, 36, 1.5);
-    }
-  }
-
   /* ---------- the readout ---------- */
   const hudEl = $('hud'), tempEl = $('temp'), barEl = $('bar'), stEl = $('state');
   const ICON_WARN = 'M3 10h2l2-3h6l2 2h3v3h2v4h-2v2h-3l-2 2H8l-3-3H3z', ICON_OK = 'm5 12 5 5 9-10';
   let hudSig = '';
   function hud(sp) {
     let temp, mode, title, code, st, msg;
-    if (sp < T.up[1]) {
-      temp = 92 + (Math.min(1, heat * 1.2) * .7 + range(sp, 0, .12) * .3) * 39;
+    if (sp < T.a[1]) {
+      temp = 92 + (Math.min(1, heat * 1.2) * .7 + range(sp, 0, .08) * .3) * 39;
       mode = ''; title = 'CHECK ENGINE'; code = 'P0217';
       st = temp >= 125 ? 'CRITICAL' : temp >= 110 ? 'HIGH' : 'RISING';
       msg = '> Engine overheat detected. Pull over. We\'ll take it from here.';
-    } else if (sp < T.scanH[0] + (T.scanH[1] - T.scanH[0]) * .5) {
-      temp = 131 - range(sp, T.b[0], T.scanH[0]) * 26;
+    } else if (sp < T.scanE[0] + (T.scanE[1] - T.scanE[0]) * .5) {
+      temp = 131 - range(sp, T.a[1], T.scanE[0]) * 26;
       mode = 'work'; title = 'DIAGNOSING'; code = 'P0217';
       st = 'COOLING';
       msg = sp < T.b[0] + .06 ? '> Pressure-testing the cooling system…' : '> Found: split top hose + thermostat stuck shut.';
     } else if (sp < T.scanD[0] + (T.scanD[1] - T.scanD[0]) * .5) {
-      temp = 105 - range(sp, T.scanH[1], T.scanD[0]) * 15;
+      temp = 105 - range(sp, T.scanE[1], T.scanD[0]) * 15;
       mode = 'work'; title = 'REPAIRED'; code = 'HOSE ✓ STAT ✓';
       st = 'STEADY';
       msg = '> New hose, clamps & thermostat. Coolant refilled and bled.';
@@ -1070,9 +1001,8 @@ body.locked .sticky-cta { transform: translate(-50%, 160%); opacity: 0; }
     const r = story.getBoundingClientRect(), sp = clamp(-r.top / (story.offsetHeight - innerHeight));
     heat = Math.min(1, heat + dt * .12);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    if (sp < T.down[1]) { drawHero(dt, now, sp); drawShutter(range(sp, ...T.down)); }
-    else if (sp < T.up[0]) drawShutter(1);
-    else { ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H); drawInside(sp); drawShutter(1 - range(sp, ...T.up)); }
+    if (sp < T.a[0] || !ok(frames.a[0])) drawHero(dt, now, sp);
+    else { ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H); drawInside(sp); }
     chaps.forEach(c => c.classList.toggle('on', sp >= +c.dataset.from && sp < +c.dataset.to));
     CHAPTERS.forEach(([a, b], i) => bars[i] && (bars[i].style.transform = `scaleX(${range(sp, a, b)})`));
     $('cue').style.opacity = sp < .02 ? 1 : 0;
@@ -1082,7 +1012,7 @@ body.locked .sticky-cta { transform: translate(-50%, 160%); opacity: 0; }
   addEventListener('resize', layout);
   heroImg.onload = () => {
     layout(); $('loader').classList.add('gone');
-    loadSeq('b', () => { ['h1', 'h2', 'd1', 'd2'].forEach(still); loadSeq('c'); });
+    loadSeq('a', () => loadSeq('b', () => { ['e1', 'e2', 'd1', 'd2'].forEach(still); loadSeq('c'); }));
   };
   layout();
   requestAnimationFrame(tick);
