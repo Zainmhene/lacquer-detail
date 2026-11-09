@@ -800,7 +800,7 @@ body.locked .sticky-cta { transform: translate(-50%, 160%); opacity: 0; }
     d: { src: 'assets/hero.jpg', focus: [.55, .55], car: .34,
          smoke: { x: [.68, .78], y: [.42, .46], drift: -.4 },
          lamps: [[.536, .574, 1], [.682, .574, 1], [.818, .523, .5]] },
-    m: { src: 'assets/hero_m.jpg', focus: [.6, .47], car: .34, zoom: 1.4,
+    m: { src: 'assets/hero_m.jpg', focus: [.5, .5], car: .34,
          smoke: { x: [.68, .78], y: [.475, .49], drift: -.4 },
          lamps: [[.536, .5225, 1], [.682, .5225, 1], [.818, .5065, .5]] },
   };
@@ -808,6 +808,32 @@ body.locked .sticky-cta { transform: translate(-50%, 160%); opacity: 0; }
   const heroImg = new Image(); heroImg.decoding = 'async'; heroImg.src = shot.src;
   let W = 0, H = 0, dpr = 1, place = null;
 
+  // On phones the entrance plays the computer video itself, in a band across the middle of the screen;
+  // the sky above and wet ground below come from the extended photo (hero_m), whose middle band is that same frame.
+  const BAND0 = 1325 / 3870, BAND1 = 2540 / 3870;
+  function BAND() {
+    const w = W / .6, h = w * 9 / 16;              // show 60% of the frame's width, enough for the whole car
+    const x = Math.min(0, Math.max(W - w, W / 2 - w * .64));
+    return { x, y: H * .47 - h / 2, w, h };
+  }
+  const band = document.createElement('canvas'), bctx = band.getContext('2d');
+  function drawBand(im, c = ctx) {
+    const b = BAND();
+    if (place && heroImg.naturalWidth) {
+      c.drawImage(heroImg, place.x, place.y, place.w, place.h);
+      const g = c.createLinearGradient(0, b.y + b.h, 0, H);   // calm the static reflections below the band
+      g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(.35, 'rgba(0,0,0,.35)'); g.addColorStop(1, 'rgba(0,0,0,.55)');
+      c.fillStyle = g; c.fillRect(0, b.y + b.h, W, H - b.y - b.h);
+    }
+    if (band.width !== cv.width || band.height !== cv.height) { band.width = cv.width; band.height = cv.height; }
+    bctx.setTransform(dpr, 0, 0, dpr, 0, 0); bctx.globalCompositeOperation = 'source-over'; bctx.clearRect(0, 0, W, H);
+    bctx.drawImage(im, b.x, b.y, b.w, b.h);
+    const F = Math.min(70, b.h * .18), g2 = bctx.createLinearGradient(0, b.y, 0, b.y + b.h);
+    g2.addColorStop(0, 'rgba(0,0,0,0)'); g2.addColorStop(F / b.h, 'rgba(0,0,0,1)'); g2.addColorStop(1 - F / b.h, 'rgba(0,0,0,1)'); g2.addColorStop(1, 'rgba(0,0,0,0)');
+    bctx.globalCompositeOperation = 'destination-in'; bctx.fillStyle = g2; bctx.fillRect(0, 0, W, H);
+    c.drawImage(band, 0, 0, W, H);
+    return true;
+  }
   function layout() {
     dpr = Math.min(devicePixelRatio || 1, 2);
     W = cv.clientWidth; H = cv.clientHeight;
@@ -817,13 +843,11 @@ body.locked .sticky-cta { transform: translate(-50%, 160%); opacity: 0; }
     const w = heroImg.naturalWidth * s, h = heroImg.naturalHeight * s;
     let x = Math.min(0, Math.max(W - w, W / 2 - w * shot.focus[0]));
     let y = Math.min(0, Math.max(H - h, H / 2 - h * shot.focus[1]));
-    let ww = w, hh = h;
-    if (shot.zoom) {                       // same zoom maths as draw(), so photo and clip line up
-      const px = x + shot.focus[0] * w, py = y + shot.focus[1] * h;
-      ww = w * shot.zoom; hh = h * shot.zoom;
-      x = Math.min(0, Math.max(W - ww, px - shot.focus[0] * ww)); y = Math.min(0, Math.max(H - hh, py - shot.focus[1] * hh));
+    place = { x, y, w, h };
+    if (PHONE) {   // phone: the band in the middle of hero_m is exactly the computer frame; line it up with BAND()
+      const b = BAND(), k = b.w / heroImg.naturalWidth;
+      place = { x: b.x, y: b.y - BAND0 * heroImg.naturalHeight * k, w: b.w, h: heroImg.naturalHeight * k };
     }
-    place = { x, y, w: ww, h: hh };
   }
   const P = (u, v) => [place.x + u * place.w, place.y + v * place.h];
   const U = () => place.w * shot.car / 770;
@@ -888,9 +912,9 @@ body.locked .sticky-cta { transform: translate(-50%, 160%); opacity: 0; }
   const SEQ = PHONE ? { a: 121, b: 85, c: 41 } : { a: 121, b: 85, c: 38 };
   const DIR = PHONE ? 'frames/m/' : 'frames/', SUF = PHONE ? '_m' : '';
   const FOCUS = PHONE
-    ? { a: [.6, .47], b: [.5, .55], c: [.5, .6], e1: [.5, .5], e2: [.5, .5], d1: [.5, .5], d2: [.5, .5] }
+    ? { a: [.5, .5], b: [.5, .55], c: [.5, .6], e1: [.5, .5], e2: [.5, .5], d1: [.5, .5], d2: [.5, .5] }
     : { a: [.55, .55], b: [.5, .5], c: [.6, .55], e1: [.5, .5], e2: [.5, .5], d1: [.5, .5], d2: [.5, .5] };
-  const ZOOM = PHONE ? { a: 1.4 } : {};
+  const ZOOM = {};
   const frames = { a: [], b: [], c: [] }, stills = {};
   const ok = im => im && im.complete && im.naturalWidth > 0;
   function still(k) {
@@ -918,6 +942,7 @@ body.locked .sticky-cta { transform: translate(-50%, 160%); opacity: 0; }
   }
   function draw(o, c = ctx) {
     if (!o || !ok(o.im)) return false;
+    if (o.band) return drawBand(o.im, c);
     let [x, y, w, h] = cover(o.im, o.f);
     if (o.z) {                                  // zoom in around the focus point
       const px = x + o.f[0] * w, py = y + o.f[1] * h;
@@ -926,7 +951,7 @@ body.locked .sticky-cta { transform: translate(-50%, 160%); opacity: 0; }
     c.drawImage(o.im, x, y, w, h); return true;
   }
   function pickInside(sp) {
-    const S = k => ({ im: still(k), f: FOCUS[k], z: ZOOM[k] }), F = (k, u) => ({ im: frameOf(k, u), f: FOCUS[k], z: ZOOM[k] });
+    const S = k => ({ im: still(k), f: FOCUS[k], z: ZOOM[k] }), F = (k, u) => ({ im: frameOf(k, u), f: FOCUS[k], z: ZOOM[k], band: PHONE && k === 'a' });
     const dip = (a, b, r) => { const k = range(sp, ...r); return k < .5 ? { base: a, dip: k * 2 } : { base: b, dip: (1 - k) * 2 }; };
     if (sp < T.dip1[0]) return { base: F('a', range(sp, ...T.a)) };
     if (sp < T.dip1[1]) return dip(F('a', 1), F('b', 0), T.dip1);
