@@ -524,8 +524,8 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
     if (sp < T.xf[1]) return { base: F('w', 1), over: S('b1'), overA: ease(range(sp, ...T.xf)) };
     if (sp < T.dip2[0]) return { base: S('b1'), next: S('b2'), scan: range(sp, ...T.scanB), label: 'BRAKES' };
     if (sp < T.dip2[1]) return dip(S('b2'), F('o', 0), T.dip2);
-    if (sp < T.push[0]) return { base: F('o', range(sp, ...T.o)) };
-    if (sp < T.scanS[0]) return { base: E(ease(range(sp, ...T.push)), 's1') };
+    if (sp < T.push[0]) return { base: F('o', range(sp, ...T.o)), over: S('s1'), overA: ease(range(sp, T.o[1] - .012, T.o[1])) };
+    if (sp < T.scanS[0]) return { base: E(ease(range(sp, ...T.push)), 's1') };   // o's last frame = s1, so this is seamless
     if (sp < T.dip3[0]) return { base: E(1, 's1'), next: E(1, 's2'), scan: range(sp, ...T.scanS), label: 'SERVICE' };
     if (sp < T.dip3[1]) return dip(S('s2'), F('c', 0), T.dip3);
     return { base: F('c', range(sp, ...T.c)) };
@@ -545,7 +545,7 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
     const w = im.naturalWidth * s, h = im.naturalHeight * s;
     return [clamp(W / 2 - w * f[0], W - w, 0), clamp(H / 2 - h * f[1], H - h, 0), w, h];
   }
-  function draw(o, alpha = 1) {
+  function draw(o, alpha = 1, c = ctx) {
     if (!o || !ok(o.im)) return false;
     let [x, y, w, h] = cover(o.im, o.f);
     if (o.z && o.z !== 1) {                     // camera move: zoom, pulling point p towards the centre by t
@@ -557,8 +557,22 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
       w *= o.z; h *= o.z; x = cx - ux * w; y = cy - uy * h;
       x = clamp(x, W - w, 0); y = clamp(y, H - h, 0);
     }
-    ctx.globalAlpha = alpha; ctx.drawImage(o.im, x, y, w, h); ctx.globalAlpha = 1;
+    c.globalAlpha = alpha; c.drawImage(o.im, x, y, w, h); c.globalAlpha = 1;
     return true;
+  }
+  // soft wipe: the "after" photo slides in behind a wide feathered edge and a faint hairline
+  const wipe = document.createElement('canvas'), wctx = wipe.getContext('2d');
+  function softWipe(next, k) {
+    if (wipe.width !== cv.width || wipe.height !== cv.height) { wipe.width = cv.width; wipe.height = cv.height; }
+    const F = Math.max(120, W * .22), x0 = k * (W + F) - F;
+    wctx.setTransform(dpr, 0, 0, dpr, 0, 0); wctx.globalCompositeOperation = 'source-over';
+    wctx.clearRect(0, 0, W, H); draw(next, 1, wctx);
+    const g = wctx.createLinearGradient(x0, 0, x0 + F, 0);
+    g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    wctx.globalCompositeOperation = 'destination-in'; wctx.fillStyle = g;
+    wctx.fillRect(0, 0, W, H);
+    ctx.drawImage(wipe, 0, 0, W, H);
+    ctx.fillStyle = 'rgba(255,255,255,.14)'; ctx.fillRect(Math.round(x0 + F * .5), 0, 1, H);
   }
   function render() {
     const key = sp.toFixed(4) + W + 'x' + H;
@@ -572,21 +586,7 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
     if (s.next && s.scan > 0) {
       const k = ease(s.scan), x = k * W;
       if (k >= 1) draw(s.next);
-      else {
-        ctx.save(); ctx.beginPath(); ctx.rect(0, 0, x, H); ctx.clip(); draw(s.next); ctx.restore();
-        const g = ctx.createLinearGradient(x - 90, 0, x + 26, 0);
-        g.addColorStop(0, 'rgba(34,211,238,0)'); g.addColorStop(.75, 'rgba(34,211,238,.16)'); g.addColorStop(.97, 'rgba(160,245,255,.9)'); g.addColorStop(1, 'rgba(34,211,238,0)');
-        ctx.globalCompositeOperation = 'lighter';
-        ctx.fillStyle = g; ctx.fillRect(x - 90, 0, 116, H);
-        ctx.fillStyle = 'rgba(200,250,255,.95)'; ctx.fillRect(x - 1, 0, 2, H);
-        ctx.fillStyle = 'rgba(34,211,238,.08)';
-        for (let yy = 0; yy < H; yy += 4) ctx.fillRect(x - 60, yy, 60, 1);
-        ctx.globalCompositeOperation = 'source-over';
-        ctx.font = '600 10px "IBM Plex Mono", monospace'; ctx.fillStyle = 'rgba(160,245,255,.95)';
-        const label = `WORKING ON · ${s.label} · ${Math.round(k * 100)}%`;
-        const tw = ctx.measureText(label).width;
-        ctx.fillText(label, Math.min(x + 10, W - tw - 12), H * .3);
-      }
+      else softWipe(s.next, k);
     }
     if (s.dip) { ctx.fillStyle = `rgba(0,0,0,${clamp(s.dip) * .92})`; ctx.fillRect(0, 0, W, H); }
   }
