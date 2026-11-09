@@ -320,15 +320,15 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
           <a class="pill ghost" href="#services">See prices</a>
         </div>
       </div>
-      <div class="chap" data-from=".2" data-to=".36">
+      <div class="chap" data-from=".12" data-to=".3">
         <p class="kick">01 · Booked in</p>
         <h2 class="big">Checked in.<em>Checked over.</em></h2>
       </div>
-      <div class="chap" data-from=".42" data-to=".58">
+      <div class="chap" data-from=".41" data-to=".54">
         <p class="kick">02 · Brakes</p>
         <h2 class="big">Worn out.<em>Swapped out.</em></h2>
       </div>
-      <div class="chap" data-from=".63" data-to=".79">
+      <div class="chap" data-from=".65" data-to=".79">
         <p class="kick">03 · Full service</p>
         <h2 class="big">Fresh oil.<em>Fresh everything.</em></h2>
       </div>
@@ -469,14 +469,15 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
   // phones get their own vertical clips (frames/m/…); the close-ups are cropped from the wide photos
   const PHONE = innerWidth / innerHeight < .9;
   const DIR = PHONE ? 'frames/m/' : 'frames/';
-  const SEQ = PHONE ? { a: 85, c: 39 } : { a: 85, c: 39 };   // a: drives in at night · c: drives out at sunrise
+  // a: drives in · w: rolls forward, camera to the wheel · o: bonnet opens · c: drives out at sunrise
+  const SEQ = PHONE ? { a: 85, w: 60, o: 50, c: 39 } : { a: 85, w: 60, o: 50, c: 39 };
   const FOCUS = PHONE
-    ? { a: [.5, .5], c: [.5, .5], b1: [.46, .55], b2: [.46, .55], s1: [.5, .6], s2: [.5, .6] }
-    : { a: [.5, .6], c: [.5, .6], b1: [.52, .55], b2: [.52, .55], s1: [.5, .55], s2: [.5, .55] };
-  const frames = { a: [], c: [] };
+    ? { a: [.5, .5], w: [.5, .5], o: [.5, .5], c: [.5, .5], b1: [.5, .55], b2: [.5, .55], s1: [.5, .5], s2: [.5, .5] }
+    : { a: [.5, .6], w: [.5, .5], o: [.5, .5], c: [.5, .6], b1: [.5, .5], b2: [.5, .5], s1: [.5, .5], s2: [.5, .5] };
+  const frames = { a: [], w: [], o: [], c: [] };
   const stills = {};
   function still(k) {
-    if (!stills[k]) { const im = new Image(); im.decoding = 'async'; im.src = `assets/${k}.jpg`; im.onload = () => (dirty = true); stills[k] = im; }
+    if (!stills[k]) { const im = new Image(); im.decoding = 'async'; im.src = `assets/${k}${PHONE ? "_m" : ""}.jpg`; im.onload = () => (dirty = true); stills[k] = im; }
     return stills[k];
   }
   function loadSeq(k, done) {
@@ -505,25 +506,27 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
      .36   dip → brakes, scan worn → new
      .58   dip → engine bay, scan grimy → serviced
      .79   dip → sunrise, car drives out          → clip c          */
-  const T = { a: [.05, .32], push: [.33, .392], xf: [.392, .408], settleB: [.408, .45], scanB: [.45, .53], dip2: [.58, .62], settleS: [.62, .66], scanS: [.66, .74], dip3: [.79, .83], c: [.86, .985] };
+  const T = { a: [.05, .27], w: [.28, .37], xf: [.37, .4], scanB: [.43, .51], dip2: [.54, .57], o: [.57, .64], push: [.64, .68], scanS: [.68, .76], dip3: [.79, .83], c: [.86, .985] };
   // the camera moves in on the front wheel of the 4K garage shot, then hands over to the brake close-up
-  const MASTER = PHONE ? 'master_m' : 'master';
-  const WHEEL = PHONE ? [.4435, .618] : [.431, .647];
-  const ZMAX = PHONE ? 2.6 : 2.4;
-  const CHAPTERS = [[0, .36], [.36, .58], [.58, .79], [.79, 1]];
+  // after the bonnet opens, the camera moves in on the engine bay (still showing the headlights and badge)
+  const ENGINE = PHONE ? [.5, .535] : [.505, .551];
+  const ZMAX = PHONE ? 1.95 : 2.35;
+  const CHAPTERS = [[0, .37], [.37, .54], [.54, .79], [.79, 1]];
 
   function pick(sp) {
     const S = k => ({ im: still(k), f: FOCUS[k] });
     const F = (k, u) => ({ im: frameOf(k, u), f: FOCUS[k] });
     const dip = (a, b, r) => { const k = range(sp, ...r); return k < .5 ? { base: a, dip: k * 2 } : { base: b, dip: (1 - k) * 2 }; };
     const Z = (o, z, p, t) => Object.assign(o, { z, p, t });
-    const M = k => Z({ im: still(MASTER), f: FOCUS.a }, 1 + (ZMAX - 1) * k, WHEEL, k);
-    if (sp < T.push[0]) return { base: F('a', range(sp, ...T.a)) };
-    if (sp < T.xf[0]) return { base: ok(still(MASTER)) ? M(ease(range(sp, ...T.push))) : F('a', 1) };
-    if (sp < T.xf[1]) { const k = range(sp, ...T.xf); return { base: M(1), over: Z(S('b1'), 1.12 - .04 * k), overA: ease(k) }; }
-    if (sp < T.dip2[0]) { const z = 1.08 - .08 * ease(range(sp, ...T.settleB)); return { base: Z(S('b1'), z), next: Z(S('b2'), z), scan: range(sp, ...T.scanB), label: 'BRAKES' }; }
-    if (sp < T.dip2[1]) return dip(S('b2'), Z(S('s1'), 1.18), T.dip2);
-    if (sp < T.dip3[0]) { const z = 1.18 - .18 * ease(range(sp, ...T.settleS)); return { base: Z(S('s1'), z), next: Z(S('s2'), z), scan: range(sp, ...T.scanS), label: 'SERVICE' }; }
+    const E = (k, im) => Z(S(im), 1 + (ZMAX - 1) * k, ENGINE, k);
+    if (sp < T.w[0]) return { base: F('a', range(sp, ...T.a)) };
+    if (sp < T.xf[0]) return { base: F('w', range(sp, ...T.w)) };
+    if (sp < T.xf[1]) return { base: F('w', 1), over: S('b1'), overA: ease(range(sp, ...T.xf)) };
+    if (sp < T.dip2[0]) return { base: S('b1'), next: S('b2'), scan: range(sp, ...T.scanB), label: 'BRAKES' };
+    if (sp < T.dip2[1]) return dip(S('b2'), F('o', 0), T.dip2);
+    if (sp < T.push[0]) return { base: F('o', range(sp, ...T.o)) };
+    if (sp < T.scanS[0]) return { base: E(ease(range(sp, ...T.push)), 's1') };
+    if (sp < T.dip3[0]) return { base: E(1, 's1'), next: E(1, 's2'), scan: range(sp, ...T.scanS), label: 'SERVICE' };
     if (sp < T.dip3[1]) return dip(S('s2'), F('c', 0), T.dip3);
     return { base: F('c', range(sp, ...T.c)) };
   }
@@ -627,7 +630,7 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
   const first = new Image(); first.src = `${DIR}a/001.webp`;
   first.onload = () => {
     frames.a[0] = first; $('loader').classList.add('gone'); dirty = true;
-    loadSeq('a', () => { [MASTER, 'b1', 'b2', 's1', 's2'].forEach(still); loadSeq('c'); });
+    loadSeq('a', () => loadSeq('w', () => { ['b1', 'b2', 's1', 's2'].forEach(still); loadSeq('o', () => loadSeq('c')); }));
   };
   requestAnimationFrame(tick);
 

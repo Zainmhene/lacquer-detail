@@ -50,3 +50,15 @@
 - `frames/a|b|c`: clip frames, 12 fps WebP
 - `source/`: full-size originals (4K JPG) and the original clips
 - `BRIEF.md`: the creative brief
+
+## V3 (realistic wheel + bonnet), Higgsfield job IDs
+| What | Computer | Phone |
+|---|---|---|
+| Front wheel corner (car turned right) | b8964274-0845-4ad1-aac2-795ce5ff9857 | bb3d1311-be34-446e-aa90-73584958cc01 |
+| Wheel off, worn brakes | 1db817c1-4d9c-4300-9e64-bfcdc3186913 | 024c18ef-fcbb-43de-850a-c9fe8130beb0 |
+| New brakes | 11c655af-1cf8-4f3f-992e-705432e7328a | 14d8b010-4514-4b5d-ba12-b20b6144976b |
+| Front, bonnet closed | 31d48c21-6cb0-4f8b-b17d-6eb694cf2b8e | 91773d22-bb18-46ee-9da6-c99f503fef5a |
+| Bonnet open, dirty engine | 3ace6a5c-3e12-4288-a533-1939353e120e | 0a5cd764-f219-4575-9e58-a9f77e0c34c2 |
+| Serviced engine | bd1e5213-9a79-4ebd-a670-c361b4b70a51 | e6e4d9e5-15a4-4cde-b258-d23c78964120 |
+| Clip w: rolls forward, camera to wheel (4K) | c7a3eee0 → 8d5c9590-b0e5-4ca0-94a9-ab41c82c01b4 | 11b44bce → cd8d2de7-e2e9-4293-b9aa-944e5d3ae590 |
+| Clip o: bonnet opens (4K) | a496abc0 → 7b72c143-c3ce-45b1-9864-948b68cc399a | cae807e9 → f7fa6c93-ed03-4b29-be58-0023d49b4e75 |
