@@ -797,10 +797,10 @@ body.locked .sticky-cta { transform: translate(-50%, 160%); opacity: 0; }
 
   /* ---------- hero photo with smoke, rain and hazards ---------- */
   const SHOTS = {
-    d: { src: 'assets/hero.jpg', focus: [.6, .55], car: .34,
+    d: { src: 'assets/hero.jpg', focus: [.55, .55], car: .34,
          smoke: { x: [.68, .78], y: [.42, .46], drift: -.4 },
          lamps: [[.536, .574, 1], [.682, .574, 1], [.818, .523, .5]] },
-    m: { src: 'assets/hero_m.jpg', focus: [.5, .6], car: .37,
+    m: { src: 'assets/hero_m.jpg', focus: [.5, .55], car: .37,
          smoke: { x: [.42, .55], y: [.585, .6], drift: -.4 },
          lamps: [[.398, .647, 1], [.606, .647, 1], [.346, .613, .5], [.648, .613, .5]] },
   };
@@ -813,9 +813,9 @@ body.locked .sticky-cta { transform: translate(-50%, 160%); opacity: 0; }
     W = cv.clientWidth; H = cv.clientHeight;
     cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
     if (!heroImg.naturalWidth) { place = null; return; }
-    const s = Math.max(W / heroImg.naturalWidth, H / heroImg.naturalHeight) * 1.04;
+    const s = Math.max(W / heroImg.naturalWidth, H / heroImg.naturalHeight);
     const w = heroImg.naturalWidth * s, h = heroImg.naturalHeight * s;
-    const x = Math.min(0, Math.max(W - w, W / 2 - w * shot.focus[0] + (PHONE ? 0 : W * .06)));
+    const x = Math.min(0, Math.max(W - w, W / 2 - w * shot.focus[0]));
     const y = Math.min(0, Math.max(H - h, H / 2 - h * shot.focus[1]));
     place = { x, y, w, h };
   }
@@ -855,8 +855,7 @@ body.locked .sticky-cta { transform: translate(-50%, 160%); opacity: 0; }
       ctx.fillStyle = g2; ctx.fillRect(gx - R2, gy - R2, R2 * 2, R2 * 2);
       ctx.globalCompositeOperation = 'source-over';
     }
-    if (!reduce) { acc += dt * (10 + level * 26); while (acc > 1) { spawnPuff(); acc--; } }
-    else if (!puffs.length) for (let i = 0; i < 40; i++) { spawnPuff(); puffs[i].life = rnd(0, 3); }
+    // (smoke comes from the photo and video themselves)
     for (let i = puffs.length - 1; i >= 0; i--) {
       const p = puffs[i];
       if (!reduce) { p.life += dt; p.x += p.vx * dt; p.y += p.vy * dt; p.r += p.grow * dt; p.rot += p.vr * dt; p.vx -= 4 * dt * U(); }
@@ -911,26 +910,40 @@ body.locked .sticky-cta { transform: translate(-50%, 160%); opacity: 0; }
     const s = Math.max(W / im.naturalWidth, H / im.naturalHeight), w = im.naturalWidth * s, h = im.naturalHeight * s;
     return [clamp(W / 2 - w * f[0], W - w, 0), clamp(H / 2 - h * f[1], H - h, 0), w, h];
   }
-  function draw(o) {
+  function draw(o, c = ctx) {
     if (!o || !ok(o.im)) return false;
     let [x, y, w, h] = cover(o.im, o.f);
     if (o.z) {                                  // zoom in around the focus point
       const px = x + o.f[0] * w, py = y + o.f[1] * h;
       w *= o.z; h *= o.z; x = clamp(px - o.f[0] * w, W - w, 0); y = clamp(py - o.f[1] * h, H - h, 0);
     }
-    ctx.drawImage(o.im, x, y, w, h); return true;
+    c.drawImage(o.im, x, y, w, h); return true;
   }
   function pickInside(sp) {
     const S = k => ({ im: still(k), f: FOCUS[k], z: ZOOM[k] }), F = (k, u) => ({ im: frameOf(k, u), f: FOCUS[k] });
     const dip = (a, b, r) => { const k = range(sp, ...r); return k < .5 ? { base: a, dip: k * 2 } : { base: b, dip: (1 - k) * 2 }; };
     if (sp < T.dip1[0]) return { base: F('a', range(sp, ...T.a)) };
     if (sp < T.dip1[1]) return dip(F('a', 1), F('b', 0), T.dip1);
-    if (sp < T.scanE[0]) return { base: F('b', range(sp, ...T.b)) };
+    if (sp < T.scanE[0]) return { base: F('b', range(sp, ...T.b)), over: S('e1'), overA: ease(range(sp, T.b[1] - .005, T.scanE[0])) };
     if (sp < T.dip2[0]) return { base: S('e1'), next: S('e2'), scan: range(sp, ...T.scanE), label: 'COOLING SYSTEM' };
     if (sp < T.dip2[1]) return dip(S('e2'), S('d1'), T.dip2);
     if (sp < T.dip3[0]) return { base: S('d1'), next: S('d2'), scan: range(sp, ...T.scanD), label: 'FAULT CODES' };
     if (sp < T.dip3[1]) return dip(S('d2'), F('c', 0), T.dip3);
     return { base: F('c', range(sp, ...T.c)) };
+  }
+  // soft wipe: the "after" photo slides in behind a wide feathered edge and a faint hairline
+  const wipe = document.createElement('canvas'), wctx = wipe.getContext('2d');
+  function softWipe(next, k) {
+    if (wipe.width !== cv.width || wipe.height !== cv.height) { wipe.width = cv.width; wipe.height = cv.height; }
+    const F = Math.max(120, W * .22), x0 = k * (W + F) - F;
+    wctx.setTransform(dpr, 0, 0, dpr, 0, 0); wctx.globalCompositeOperation = 'source-over';
+    wctx.clearRect(0, 0, W, H); draw(next, wctx);
+    const g = wctx.createLinearGradient(x0, 0, x0 + F, 0);
+    g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    wctx.globalCompositeOperation = 'destination-in'; wctx.fillStyle = g;
+    wctx.fillRect(0, 0, W, H);
+    ctx.drawImage(wipe, 0, 0, W, H);
+    ctx.fillStyle = 'rgba(255,255,255,.14)'; ctx.fillRect(Math.round(x0 + F * .5), 0, 1, H);
   }
   function drawInside(sp) {
     const s = pickInside(sp);
@@ -938,21 +951,9 @@ body.locked .sticky-cta { transform: translate(-50%, 160%); opacity: 0; }
     if (s.next && s.scan > 0) {
       const k = ease(s.scan), x = k * W;
       if (k >= 1) draw(s.next);
-      else {
-        ctx.save(); ctx.beginPath(); ctx.rect(0, 0, x, H); ctx.clip(); draw(s.next); ctx.restore();
-        const g = ctx.createLinearGradient(x - 90, 0, x + 26, 0);
-        g.addColorStop(0, 'rgba(255,106,19,0)'); g.addColorStop(.75, 'rgba(255,106,19,.18)'); g.addColorStop(.97, 'rgba(255,214,170,.95)'); g.addColorStop(1, 'rgba(255,106,19,0)');
-        ctx.globalCompositeOperation = 'lighter';
-        ctx.fillStyle = g; ctx.fillRect(x - 90, 0, 116, H);
-        ctx.fillStyle = 'rgba(255,230,200,.95)'; ctx.fillRect(x - 1, 0, 2, H);
-        ctx.fillStyle = 'rgba(255,106,19,.08)';
-        for (let yy = 0; yy < H; yy += 4) ctx.fillRect(x - 60, yy, 60, 1);
-        ctx.globalCompositeOperation = 'source-over';
-        ctx.font = '700 10px "JetBrains Mono", monospace'; ctx.fillStyle = 'rgba(255,214,170,.95)';
-        const label = `REPAIRING · ${s.label} · ${Math.round(k * 100)}%`, tw = ctx.measureText(label).width;
-        ctx.fillText(label, Math.min(x + 10, W - tw - 12), H * .3);
-      }
+      else softWipe(s.next, k);
     }
+    if (s.over && s.overA > 0) { ctx.globalAlpha = clamp(s.overA); draw(s.over); ctx.globalAlpha = 1; }
     if (s.dip) { ctx.fillStyle = `rgba(0,0,0,${clamp(s.dip) * .92})`; ctx.fillRect(0, 0, W, H); }
   }
 
@@ -1001,8 +1002,12 @@ body.locked .sticky-cta { transform: translate(-50%, 160%); opacity: 0; }
     const r = story.getBoundingClientRect(), sp = clamp(-r.top / (story.offsetHeight - innerHeight));
     heat = Math.min(1, heat + dt * .12);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const XF = .025;   // the opening photo melts into the first video frame
     if (sp < T.a[0] || !ok(frames.a[0])) drawHero(dt, now, sp);
-    else { ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H); drawInside(sp); }
+    else {
+      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H); drawInside(sp);
+      if (sp < T.a[0] + XF) { ctx.save(); ctx.globalAlpha = 1 - ease(range(sp, T.a[0], T.a[0] + XF)); drawHero(dt, now, sp); ctx.restore(); }
+    }
     chaps.forEach(c => c.classList.toggle('on', sp >= +c.dataset.from && sp < +c.dataset.to));
     CHAPTERS.forEach(([a, b], i) => bars[i] && (bars[i].style.transform = `scaleX(${range(sp, a, b)})`));
     $('cue').style.opacity = sp < .02 ? 1 : 0;
