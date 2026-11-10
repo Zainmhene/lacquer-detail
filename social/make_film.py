@@ -154,24 +154,30 @@ def over(base, layer, alpha=1.0):
     return base * (1 - a) + layer[..., :3] * a
 
 def end_card():
-    img = Image.new('RGB', (W, H), (11, 12, 13)); d = ImageDraw.Draw(img)
-    cx, cy = W // 2, H // 2 - int(120 * U)
-    r = int(110 * U)
-    hexa = [(cx + r * np.cos(np.pi / 6 + i * np.pi / 3), cy - int(330 * U) + r * np.sin(np.pi / 6 + i * np.pi / 3)) for i in range(6)]
-    d.polygon(hexa, outline=ORANGE, width=int(14 * U))
-    d.ellipse([cx - r * .42, cy - int(330 * U) - r * .42, cx + r * .42, cy - int(330 * U) + r * .42], outline=ORANGE, width=int(14 * U))
-    f1 = font('BigShouldersStencilDisplay', 330 * U); f2 = font('JetBrainsMono', 44 * U); f3 = font('Archivo', 64 * U)
-    d.text((cx, cy), 'BAY 7', font=f1, fill=(242, 238, 232), anchor='mm')
-    d.text((cx, cy + int(210 * U)), 'M O T O R   W O R K S', font=f2, fill=(162, 157, 149), anchor='mm')
-    bw2, bh2 = int(760 * U), int(150 * U); by2 = cy + int(420 * U)
-    d.rounded_rectangle([cx - bw2 // 2, by2, cx + bw2 // 2, by2 + bh2], radius=bh2 // 2, fill=ORANGE)
-    tw = d.textlength('Book a repair', font=f3); aw = int(56 * U)
-    tx = cx - (tw + aw + int(24 * U)) / 2
-    d.text((tx, by2 + bh2 // 2), 'Book a repair', font=f3, fill=(18, 10, 4), anchor='lm')
-    ax, ay, st = tx + tw + int(24 * U), by2 + bh2 // 2, max(2, int(8 * U))
-    d.line([(ax, ay), (ax + aw, ay)], fill=(18, 10, 4), width=st)
-    d.line([(ax + aw * .55, ay - aw * .45), (ax + aw, ay), (ax + aw * .55, ay + aw * .45)], fill=(18, 10, 4), width=st, joint='curve')
-    d.text((cx, by2 + bh2 + int(110 * U)), 'Free check · Fixed quote · Same day', font=f2, fill=(207, 202, 194), anchor='mm')
+    """Tsugi agency card."""
+    img = Image.new('RGB', (W, H), (10, 10, 11)); d = ImageDraw.Draw(img)
+    cx, cy = W // 2, H // 2 - int((60 if V else 40) * U)
+    f1 = font('ArchivoBlack', (300 if V else 330) * U); f2 = font('JetBrainsMono', 42 * U); f3 = font('Archivo', 60 * U)
+    # TSUGI with wide letter spacing
+    word = 'TSUGI'; sp = int(34 * U)
+    ws = [d.textlength(ch, font=f1) for ch in word]; tw = sum(ws) + sp * (len(word) - 1)
+    x = cx - tw / 2
+    for ch, w in zip(word, ws):
+        d.text((x, cy), ch, font=f1, fill=(245, 244, 240), anchor='lm'); x += w + sp
+    # thin orange rule under the name
+    lw = int(220 * U); ly = cy + int(220 * U)
+    d.rectangle([cx - lw // 2, ly, cx + lw // 2, ly + max(3, int(8 * U))], fill=ORANGE)
+    d.text((cx, ly + int(110 * U)), 'W E B S I T E S   F O R   C A R   B U S I N E S S E S', font=f2, fill=(170, 168, 162), anchor='mm')
+    # call to action
+    bw2, bh2 = int(820 * U), int(150 * U); by2 = ly + int(260 * U)
+    d.rounded_rectangle([cx - bw2 // 2, by2, cx + bw2 // 2, by2 + bh2], radius=bh2 // 2, outline=(245, 244, 240), width=max(2, int(5 * U)))
+    t = 'DM us to get yours'
+    tw2 = d.textlength(t, font=f3); aw = int(52 * U)
+    tx = cx - (tw2 + aw + int(24 * U)) / 2; ay = by2 + bh2 // 2
+    d.text((tx, ay), t, font=f3, fill=(245, 244, 240), anchor='lm')
+    ax, st = tx + tw2 + int(24 * U), max(2, int(7 * U))
+    d.line([(ax, ay), (ax + aw, ay)], fill=ORANGE, width=st)
+    d.line([(ax + aw * .55, ay - aw * .45), (ax + aw, ay), (ax + aw * .55, ay + aw * .45)], fill=ORANGE, width=st, joint='curve')
     return np.asarray(img, np.float32)
 
 # ---------------- timeline ----------------
