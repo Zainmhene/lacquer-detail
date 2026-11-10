@@ -966,7 +966,7 @@ body.locked .sticky-cta { transform: translate(-50%, 160%); opacity: 0; }
   const wipe = document.createElement('canvas'), wctx = wipe.getContext('2d');
   function softWipe(next, k) {
     if (wipe.width !== cv.width || wipe.height !== cv.height) { wipe.width = cv.width; wipe.height = cv.height; }
-    const F = Math.max(120, W * .22), x0 = k * (W + F) - F;
+    const F = Math.max(90, W * .14), x0 = k * (W + F) - F;
     wctx.setTransform(dpr, 0, 0, dpr, 0, 0); wctx.globalCompositeOperation = 'source-over';
     wctx.clearRect(0, 0, W, H); draw(next, wctx);
     const g = wctx.createLinearGradient(x0, 0, x0 + F, 0);
@@ -974,7 +974,12 @@ body.locked .sticky-cta { transform: translate(-50%, 160%); opacity: 0; }
     wctx.globalCompositeOperation = 'destination-in'; wctx.fillStyle = g;
     wctx.fillRect(0, 0, W, H);
     ctx.drawImage(wipe, 0, 0, W, H);
-    ctx.fillStyle = 'rgba(255,255,255,.14)'; ctx.fillRect(Math.round(x0 + F * .5), 0, 1, H);
+    // the line doing the work: a soft coloured glow with a crisp bright core
+    const lx = Math.round(x0 + F * .5), gw = Math.max(18, W * .018);
+    const gl = ctx.createLinearGradient(lx - gw, 0, lx + gw, 0);
+    gl.addColorStop(0, 'rgba(255,106,19,0)'); gl.addColorStop(.5, 'rgba(255,106,19,.45)'); gl.addColorStop(1, 'rgba(255,106,19,0)');
+    ctx.fillStyle = gl; ctx.fillRect(lx - gw, 0, gw * 2, H);
+    ctx.fillStyle = 'rgba(255,255,255,.9)'; ctx.fillRect(lx - 1, 0, 2, H);
   }
   function drawInside(sp) {
     const s = pickInside(sp);
