@@ -506,7 +506,7 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
      .36   dip → brakes, scan worn → new
      .58   dip → engine bay, scan grimy → serviced
      .79   dip → sunrise, car drives out          → clip c          */
-  const T = { a: [.05, .27], w: [.28, .34], push0: [.34, .395], xf: [.395, .415], scanB: [.43, .51], dip2: [.54, .57], o: [.57, .64], push: [.64, .68], scanS: [.68, .76], dip3: [.79, .83], c: [.86, .985] };
+  const T = { a: [.05, .27], w: [.28, .34], push0: [.34, .385], xf: [.385, .43], scanB: [.44, .52], dip2: [.54, .57], o: [.57, .64], push: [.64, .68], scanS: [.68, .76], dip3: [.79, .83], c: [.86, .985] };
   // the camera moves in on the front wheel of the 4K garage shot, then hands over to the brake close-up
   // after the bonnet opens, the camera moves in on the engine bay (still showing the headlights and badge)
   const ENGINE = PHONE ? [.5, .535] : [.505, .551];
@@ -523,16 +523,18 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
     const Z = (o, z, p, t) => Object.assign(o, { z, p, t });
     const E = (k, im) => Z(S(im), 1 + (ZMAX - 1) * k, ENGINE, k);
     if (sp < T.w[0]) return { base: F('a', range(sp, ...T.a)) };
-    const Wz = (k, im) => Z(S(im), 1 + (ZW - 1) * k, WHEEL, k);
+    // m: extra push while the wheel comes off, so the camera keeps moving in through the change
+    const Wz = (k, im, m = 1) => Z(S(im), (1 + (ZW - 1) * k) * m, WHEEL, k);
+    const MX = 1.16;
     if (sp < T.push0[0]) return { base: F('w', range(sp, ...T.w)), over: S('m1'), overA: ease(range(sp, T.w[1] - .01, T.w[1])) };
     if (sp < T.xf[0]) return { base: Wz(ease(range(sp, ...T.push0)), 'm1') };
-    if (sp < T.xf[1]) return { base: Wz(1, 'm1'), over: Wz(1, 'b1'), overA: ease(range(sp, ...T.xf)) };
-    if (sp < T.dip2[0]) return { base: Wz(1, 'b1'), next: Wz(1, 'b2'), scan: range(sp, ...T.scanB), label: 'BRAKES' };
-    if (sp < T.dip2[1]) return dip(Wz(1, 'b2'), F('o', 0), T.dip2);
+    if (sp < T.xf[1]) { const k = range(sp, ...T.xf), m = 1 + (MX - 1) * ease(k); return { base: Wz(1, 'm1', m), over: Wz(1, 'b1', m), overA: ease(clamp((k - .15) / .7)) }; }
+    if (sp < T.dip2[0]) return { base: Wz(1, 'b1', MX), next: Wz(1, 'b2', MX), scan: range(sp, ...T.scanB), label: 'BRAKES' };
+    if (sp < T.dip2[1]) return dip(Wz(1, 'b2', MX), F('o', 0), T.dip2);
     if (sp < T.push[0]) return { base: F('o', range(sp, ...T.o)), over: S('s1'), overA: ease(range(sp, T.o[1] - .012, T.o[1])) };
     if (sp < T.scanS[0]) return { base: E(ease(range(sp, ...T.push)), 's1') };   // o's last frame = s1, so this is seamless
     if (sp < T.dip3[0]) return { base: E(1, 's1'), next: E(1, 's2'), scan: range(sp, ...T.scanS), label: 'SERVICE' };
-    if (sp < T.dip3[1]) return dip(S('s2'), F('c', 0), T.dip3);
+    if (sp < T.dip3[1]) return dip(E(1, 's2'), F('c', 0), T.dip3);
     return { base: F('c', range(sp, ...T.c)) };
   }
 
@@ -569,7 +571,7 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
   const wipe = document.createElement('canvas'), wctx = wipe.getContext('2d');
   function softWipe(next, k) {
     if (wipe.width !== cv.width || wipe.height !== cv.height) { wipe.width = cv.width; wipe.height = cv.height; }
-    const F = Math.max(120, W * .22), x0 = k * (W + F) - F;
+    const F = Math.max(90, W * .14), x0 = k * (W + F) - F;
     wctx.setTransform(dpr, 0, 0, dpr, 0, 0); wctx.globalCompositeOperation = 'source-over';
     wctx.clearRect(0, 0, W, H); draw(next, 1, wctx);
     const g = wctx.createLinearGradient(x0, 0, x0 + F, 0);
@@ -577,7 +579,12 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
     wctx.globalCompositeOperation = 'destination-in'; wctx.fillStyle = g;
     wctx.fillRect(0, 0, W, H);
     ctx.drawImage(wipe, 0, 0, W, H);
-    ctx.fillStyle = 'rgba(255,255,255,.14)'; ctx.fillRect(Math.round(x0 + F * .5), 0, 1, H);
+    // the line doing the work: a soft coloured glow with a crisp bright core
+    const lx = Math.round(x0 + F * .5), gw = Math.max(18, W * .018);
+    const gl = ctx.createLinearGradient(lx - gw, 0, lx + gw, 0);
+    gl.addColorStop(0, 'rgba(34,211,238,0)'); gl.addColorStop(.5, 'rgba(34,211,238,.45)'); gl.addColorStop(1, 'rgba(34,211,238,0)');
+    ctx.fillStyle = gl; ctx.fillRect(lx - gw, 0, gw * 2, H);
+    ctx.fillStyle = 'rgba(255,255,255,.9)'; ctx.fillRect(lx - 1, 0, 2, H);
   }
   function render() {
     const key = sp.toFixed(4) + W + 'x' + H;
