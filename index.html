@@ -320,11 +320,11 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
           <a class="pill ghost" href="#services">See prices</a>
         </div>
       </div>
-      <div class="chap" data-from=".12" data-to=".3">
+      <div class="chap" data-from=".08" data-to=".3">
         <p class="kick">01 · Booked in</p>
         <h2 class="big">Checked in.<em>Checked over.</em></h2>
       </div>
-      <div class="chap" data-from=".41" data-to=".54">
+      <div class="chap" data-from=".33" data-to=".54">
         <p class="kick">02 · Brakes</p>
         <h2 class="big">Worn out.<em>Swapped out.</em></h2>
       </div>
@@ -506,7 +506,8 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
      .36   dip → brakes, scan worn → new
      .58   dip → engine bay, scan grimy → serviced
      .79   dip → sunrise, car drives out          → clip c          */
-  const T = { a: [.05, .27], w: [.28, .34], push0: [.34, .385], xf: [.385, .43], scanB: [.44, .52], dip2: [.54, .57], o: [.57, .64], push: [.64, .68], scanS: [.68, .76], dip3: [.79, .83], c: [.86, .985] };
+  // starts with the car already inside: rolls forward, camera glides to the wheel, wheel comes off, brakes swapped
+  const T = { w: [.06, .2], push0: [.21, .31], off: [.33, .41], scanB: [.44, .52], dip2: [.54, .57], o: [.57, .64], push: [.64, .68], scanS: [.68, .76], dip3: [.79, .83], c: [.86, .985] };
   // the camera moves in on the front wheel of the 4K garage shot, then hands over to the brake close-up
   // after the bonnet opens, the camera moves in on the engine bay (still showing the headlights and badge)
   const ENGINE = PHONE ? [.5, .535] : [.505, .551];
@@ -514,7 +515,7 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
   // after the car rolls forward (locked camera), the camera glides in on the front left wheel
   const WHEEL = PHONE ? [.39, .68] : [.415, .73];
   const ZW = PHONE ? 2.3 : 2.5;
-  const CHAPTERS = [[0, .37], [.37, .54], [.54, .79], [.79, 1]];
+  const CHAPTERS = [[0, .32], [.32, .54], [.54, .79], [.79, 1]];
 
   function pick(sp) {
     const S = k => ({ im: still(k), f: FOCUS[k] });
@@ -522,15 +523,12 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
     const dip = (a, b, r) => { const k = range(sp, ...r); return k < .5 ? { base: a, dip: k * 2 } : { base: b, dip: (1 - k) * 2 }; };
     const Z = (o, z, p, t) => Object.assign(o, { z, p, t });
     const E = (k, im) => Z(S(im), 1 + (ZMAX - 1) * k, ENGINE, k);
-    if (sp < T.w[0]) return { base: F('a', range(sp, ...T.a)) };
-    // m: extra push while the wheel comes off, so the camera keeps moving in through the change
-    const Wz = (k, im, m = 1) => Z(S(im), (1 + (ZW - 1) * k) * m, WHEEL, k);
-    const MX = 1.16;
+    const Wz = (k, im) => Z(S(im), 1 + (ZW - 1) * k, WHEEL, k);
     if (sp < T.push0[0]) return { base: F('w', range(sp, ...T.w)), over: S('m1'), overA: ease(range(sp, T.w[1] - .01, T.w[1])) };
-    if (sp < T.xf[0]) return { base: Wz(ease(range(sp, ...T.push0)), 'm1') };
-    if (sp < T.xf[1]) { const k = range(sp, ...T.xf), m = 1 + (MX - 1) * ease(k); return { base: Wz(1, 'm1', m), over: Wz(1, 'b1', m), overA: ease(clamp((k - .15) / .7)) }; }
-    if (sp < T.dip2[0]) return { base: Wz(1, 'b1', MX), next: Wz(1, 'b2', MX), scan: range(sp, ...T.scanB), label: 'BRAKES' };
-    if (sp < T.dip2[1]) return dip(Wz(1, 'b2', MX), F('o', 0), T.dip2);
+    if (sp < T.off[0]) return { base: Wz(ease(range(sp, ...T.push0)), 'm1') };
+    if (sp < T.scanB[0]) return { base: Wz(1, 'm1'), next: Wz(1, 'b1'), scan: range(sp, ...T.off), label: 'WHEEL OFF' };
+    if (sp < T.dip2[0]) return { base: Wz(1, 'b1'), next: Wz(1, 'b2'), scan: range(sp, ...T.scanB), label: 'BRAKES' };
+    if (sp < T.dip2[1]) return dip(Wz(1, 'b2'), F('o', 0), T.dip2);
     if (sp < T.push[0]) return { base: F('o', range(sp, ...T.o)), over: S('s1'), overA: ease(range(sp, T.o[1] - .012, T.o[1])) };
     if (sp < T.scanS[0]) return { base: E(ease(range(sp, ...T.push)), 's1') };   // o's last frame = s1, so this is seamless
     if (sp < T.dip3[0]) return { base: E(1, 's1'), next: E(1, 's2'), scan: range(sp, ...T.scanS), label: 'SERVICE' };
@@ -615,7 +613,7 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
     $('cue').style.opacity = sp < .02 ? 1 : 0;
 
     const half = r => sp > r[0] + (r[1] - r[0]) * .5;
-    const done = [sp > T.a[1], half(T.scanB), half(T.scanS), sp > T.c[0] + .04];
+    const done = [sp > T.w[1], half(T.scanB), half(T.scanS), sp > T.c[0] + .04];
     const sig = done.join();
     if (sig !== lastSig) {
       Object.keys(ROWS).forEach((id, i) => { const r = $(id); r.classList.toggle('done', done[i]); r.lastElementChild.textContent = ROWS[id][done[i] ? 1 : 0]; });
@@ -639,10 +637,10 @@ footer { padding: 40px clamp(16px, 4.5vw, 64px) 60px; border-top: 1px solid var(
   function tick() { measure(); render(); overlays(); requestAnimationFrame(tick); }
   addEventListener('resize', size);
   size();
-  const first = new Image(); first.src = `${DIR}a/001.webp`;
+  const first = new Image(); first.src = `${DIR}w/001.webp`;
   first.onload = () => {
-    frames.a[0] = first; $('loader').classList.add('gone'); dirty = true;
-    loadSeq('a', () => loadSeq('w', () => { ['m1', 'b1', 'b2', 's1', 's2'].forEach(still); loadSeq('o', () => loadSeq('c')); }));
+    frames.w[0] = first; $('loader').classList.add('gone'); dirty = true;
+    loadSeq('w', () => { ['m1', 'b1', 'b2', 's1', 's2'].forEach(still); loadSeq('o', () => loadSeq('c')); });
   };
   requestAnimationFrame(tick);
 
